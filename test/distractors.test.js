@@ -55,3 +55,45 @@ test('padded fallbacks never contain a decimal period', () => {
     assert.ok(!/\d\.\d/.test(o), `option "${o}" uses a period`);
   }
 });
+
+test('fallback for a prefixed answer like "x = -1" nudges the number, not the whole string', () => {
+  const rng = createRng(7);
+  const { odpowiedzi, poprawna } = buildOptions('x = -1', [], rng);
+  assert.equal(odpowiedzi.length, 4);
+  assert.equal(new Set(odpowiedzi).size, 4);
+  assert.equal(odpowiedzi[poprawna], 'x = -1');
+  for (const o of odpowiedzi) {
+    assert.ok(!o.includes('('), `option "${o}" contains a literal "("`);
+    assert.ok(!o.includes(')'), `option "${o}" contains a literal ")"`);
+    assert.match(o, /^x = -?\d+(,\d+)?$/, `option "${o}" does not look like "x = <number>"`);
+  }
+});
+
+test('fallback for a prefixed answer still dedupes correctly when some distractors collide', () => {
+  const rng = createRng(8);
+  // All three "wrong" candidates collide with correct or each other, forcing
+  // the fallback path to pad out every remaining slot.
+  const { odpowiedzi, poprawna } = buildOptions('x = -1', ['x = -1', 'x = -1', 'x = -1'], rng);
+  assert.equal(odpowiedzi.length, 4);
+  assert.equal(new Set(odpowiedzi).size, 4);
+  assert.equal(odpowiedzi[poprawna], 'x = -1');
+  for (const o of odpowiedzi) {
+    assert.ok(!o.includes('('), `option "${o}" contains a literal "("`);
+  }
+});
+
+test('fallback for a unit-suffixed answer like "28 cm" produces four distinct options without crashing', () => {
+  const rng = createRng(9);
+  const { odpowiedzi, poprawna } = buildOptions('28 cm', [], rng);
+  assert.equal(odpowiedzi.length, 4);
+  assert.equal(new Set(odpowiedzi).size, 4);
+  assert.equal(odpowiedzi[poprawna], '28 cm');
+});
+
+test('fallback for a genuinely non-numeric answer (comparison operator) keeps the "(offset)" padding', () => {
+  const rng = createRng(10);
+  const { odpowiedzi, poprawna } = buildOptions('<', [], rng);
+  assert.equal(odpowiedzi.length, 4);
+  assert.equal(new Set(odpowiedzi).size, 4);
+  assert.equal(odpowiedzi[poprawna], '<');
+});

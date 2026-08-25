@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports four templates with unique ids', () => {
-  assert.equal(templates.length, 4);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
+test('exports six templates with unique ids', () => {
+  assert.equal(templates.length, 6);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 6);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -108,6 +108,43 @@ test('pierwiastki tasks always have a positive discriminant', () => {
       const task = template.generate(difficulty, createRng(seed));
       const roots = task.odpowiedz.match(/-?\d+(?:,\d+)?/g).map(parsePl);
       assert.notEqual(roots[0], roots[1], 'roots coincided; delta was zero');
+    }
+  }
+});
+
+test('wykres miejsce zerowe: a*root + b equals zero, root is inside the drawn domain, and tresc reveals no numbers', () => {
+  const template = templates.find((t) => t.id === 'funkcja_liniowa_wykres_miejsce_zerowe');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const root = parsePl(task.odpowiedz);
+      const { rownanie, a, b, xMin, xMax } = task.wykres;
+      assert.equal(rownanie, 'liniowa');
+      assert.ok(Math.abs(a * root + b) < 1e-9, `a*root+b != 0 for root=${root}`);
+      assert.ok(xMin < root && root < xMax, `root ${root} not inside domain [${xMin}, ${xMax}]`);
+      assert.ok(!/\d/.test(task.tresc), `tresc leaks a number: ${task.tresc}`);
+    }
+  }
+});
+
+test('wykres wierzcholek: q equals f(p), p is genuinely the extremum, vertex is inside the drawn domain, and tresc reveals no numbers', () => {
+  const template = templates.find((t) => t.id === 'funkcja_kwadratowa_wykres_wierzcholek');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const { a, b, c, xMin, xMax } = task.wykres;
+      const f = (x) => a * x * x + b * x + c;
+      const [pText, qText] = task.odpowiedz.replace(/[()]/g, '').split(',').map((s) => s.trim());
+      const p = parsePl(pText);
+      const q = parsePl(qText);
+      assert.ok(Math.abs(f(p) - q) < 1e-9, `f(${p}) != ${q}`);
+      const left = f(p - 1);
+      const right = f(p + 1);
+      const isMin = left >= q - 1e-9 && right >= q - 1e-9;
+      const isMax = left <= q + 1e-9 && right <= q + 1e-9;
+      assert.ok(isMin || isMax, `p=${p} is not an extremum`);
+      assert.ok(xMin < p && p < xMax, `vertex x=${p} not inside domain [${xMin}, ${xMax}]`);
+      assert.ok(!/\d/.test(task.tresc), `tresc leaks a number: ${task.tresc}`);
     }
   }
 });

@@ -24,6 +24,25 @@ const VERTEX_RANGES = {
   trudny: { pRange: 10, cMax: 30, leadingOne: false, aMax: 4 },
 };
 
+// Ranges tuned for visual legibility of the drawn graph, not for algebraic
+// difficulty — deliberately separate from RANGES/VERTEX_RANGES above. See
+// the design spec's "Known Follow-ups": these specific numbers are
+// provisional pending a general difficulty recalibration pass.
+const GRAPH_RANGES = {
+  liniowa: {
+    latwy: { coefMax: 3, rootRange: 5, halfStep: false },
+    sredni: { coefMax: 4, rootRange: 7, halfStep: false },
+    trudny: { coefMax: 4, rootRange: 7, halfStep: true },
+  },
+  kwadratowa: {
+    latwy: { pRange: 4, cMax: 6, aMax: 1 },
+    sredni: { pRange: 5, cMax: 8, aMax: 1 },
+    trudny: { pRange: 5, cMax: 8, aMax: 2 },
+  },
+};
+
+const GRAPH_DOMAIN_MARGIN = 5;
+
 function signed(value, suffix) {
   const sign = value >= 0 ? '+' : '-';
   return `${sign} ${Math.abs(value)}${suffix}`;
@@ -129,9 +148,59 @@ function wierzcholek(difficulty, rng) {
   };
 }
 
+function wykresMiejsceZerowe(difficulty, rng) {
+  const { coefMax, rootRange, halfStep } = GRAPH_RANGES.liniowa[difficulty];
+  const a = rng.int(1, coefMax) * (rng.bool() ? 1 : -1);
+  const rootWhole = rng.int(-rootRange, rootRange);
+  const root = halfStep && rng.bool() ? rootWhole + 0.5 : rootWhole;
+  const b = -a * root;
+  const xMin = Math.floor(root - GRAPH_DOMAIN_MARGIN);
+  const xMax = Math.ceil(root + GRAPH_DOMAIN_MARGIN);
+
+  return {
+    id: 'funkcja_liniowa_wykres_miejsce_zerowe',
+    type: 'otwarte',
+    tresc:
+      'Na wykresie przedstawiono funkcję liniową. ' +
+      'Odczytaj z wykresu miejsce zerowe tej funkcji.',
+    wykres: { rownanie: 'liniowa', a, b, xMin, xMax },
+    odpowiedz: `x = ${formatNumber(root)}`,
+    rozwiazanie:
+      'Miejsce zerowe to punkt przecięcia wykresu z osią OX.\n' +
+      `Wykres przecina oś OX w punkcie x = ${formatNumber(root)}.`,
+  };
+}
+
+function wykresWierzcholek(difficulty, rng) {
+  const { pRange, cMax, aMax } = GRAPH_RANGES.kwadratowa[difficulty];
+  const a = rng.int(1, aMax) * (rng.bool() ? 1 : -1);
+  const p = rng.int(-pRange, pRange);
+  const b = -2 * a * p;
+  const c = rng.int(-cMax, cMax);
+  const q = a * p * p + b * p + c;
+  const xMin = p - GRAPH_DOMAIN_MARGIN;
+  const xMax = p + GRAPH_DOMAIN_MARGIN;
+
+  return {
+    id: 'funkcja_kwadratowa_wykres_wierzcholek',
+    type: 'otwarte',
+    tresc:
+      'Na wykresie przedstawiono funkcję kwadratową. ' +
+      'Odczytaj z wykresu współrzędne wierzchołka paraboli.',
+    wykres: { rownanie: 'kwadratowa', a, b, c, xMin, xMax },
+    odpowiedz: `(${formatNumber(p)}, ${formatNumber(q)})`,
+    rozwiazanie:
+      'Wierzchołek paraboli to najniższy (dla a > 0) lub najwyższy ' +
+      '(dla a < 0) punkt wykresu.\n' +
+      `Odczytujemy współrzędne z wykresu: W = (${formatNumber(p)}, ${formatNumber(q)}).`,
+  };
+}
+
 export const templates = [
   { id: 'funkcja_liniowa_miejsce_zerowe', generate: miejsceZerowe },
   { id: 'funkcja_kwadratowa_delta', generate: delta },
   { id: 'funkcja_kwadratowa_pierwiastki', generate: pierwiastki },
   { id: 'funkcja_kwadratowa_wierzcholek', generate: wierzcholek },
+  { id: 'funkcja_liniowa_wykres_miejsce_zerowe', generate: wykresMiejsceZerowe },
+  { id: 'funkcja_kwadratowa_wykres_wierzcholek', generate: wykresWierzcholek },
 ];

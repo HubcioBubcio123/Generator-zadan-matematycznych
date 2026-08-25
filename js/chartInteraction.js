@@ -37,8 +37,15 @@ export function initCharts(container) {
 
     overlay.addEventListener('pointerdown', (event) => {
       isDrawing = true;
-      overlay.setPointerCapture(event.pointerId);
       appendPoint('M', event.clientX, event.clientY);
+      // Capture is a best-effort convenience (keeps the drag receiving
+      // events if the pointer leaves the overlay); if it fails for any
+      // reason, the stroke's starting point above is already recorded.
+      try {
+        overlay.setPointerCapture(event.pointerId);
+      } catch {
+        // no-op
+      }
     });
 
     overlay.addEventListener('pointermove', (event) => {

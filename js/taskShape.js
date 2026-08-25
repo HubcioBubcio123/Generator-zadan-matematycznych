@@ -8,6 +8,30 @@ const BAD_TOKENS = ['NaN', 'undefined', 'Infinity', 'null'];
 // is fine.
 const DECIMAL_PERIOD = /\d\.\d/;
 
+const ALLOWED_ROWNANIA = ['liniowa', 'kwadratowa'];
+
+function checkWykres(wykres) {
+  if (!wykres || typeof wykres !== 'object') {
+    throw new Error('Pole wykres musi byc obiektem.');
+  }
+  if (!ALLOWED_ROWNANIA.includes(wykres.rownanie)) {
+    throw new Error(`Nieznane rownanie w wykres.rownanie: ${wykres.rownanie}`);
+  }
+  for (const key of ['a', 'b', 'xMin', 'xMax']) {
+    if (typeof wykres[key] !== 'number' || !Number.isFinite(wykres[key])) {
+      throw new Error(`Pole wykres.${key} musi byc skonczona liczba.`);
+    }
+  }
+  if (!(wykres.xMin < wykres.xMax)) {
+    throw new Error('Pole wykres.xMin musi byc mniejsze od wykres.xMax.');
+  }
+  if (wykres.rownanie === 'kwadratowa') {
+    if (typeof wykres.c !== 'number' || !Number.isFinite(wykres.c)) {
+      throw new Error('Pole wykres.c musi byc skonczona liczba dla rownania kwadratowego.');
+    }
+  }
+}
+
 function checkText(value, field) {
   if (typeof value !== 'string' || value.length === 0) {
     throw new Error(`Pole ${field} musi byc niepustym tekstem.`);
@@ -36,6 +60,10 @@ export function assertValidTask(task) {
   checkText(task.tresc, 'tresc');
   checkText(task.odpowiedz, 'odpowiedz');
   checkText(task.rozwiazanie, 'rozwiazanie');
+
+  if ('wykres' in task) {
+    checkWykres(task.wykres);
+  }
 
   if (task.type === 'otwarte') {
     if ('odpowiedzi' in task || 'poprawna' in task) {

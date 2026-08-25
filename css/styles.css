@@ -226,6 +226,14 @@ button:hover {
   fill: #16294a;
 }
 
+/* The browser's built-in [hidden] { display: none } rule does not apply
+   within the SVG namespace, so the marker and its tooltip need their own
+   explicit hidden-state rule. */
+.wykres .znacznik[hidden],
+.wykres .etykieta-znacznika[hidden] {
+  display: none;
+}
+
 @media print {
   .naglowek,
   .pasek,

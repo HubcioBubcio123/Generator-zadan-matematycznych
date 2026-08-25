@@ -1,0 +1,47 @@
+// Renders task objects to markup. Knows only the task contract, never which
+// topic produced a task, so new topics need no change here.
+
+const LITERY = ['A', 'B', 'C', 'D'];
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function optionsHtml(task) {
+  if (task.type !== 'zamkniete') return '';
+  const items = task.odpowiedzi
+    .map((opt, i) => `<li>${LITERY[i]}. ${escapeHtml(opt)}</li>`)
+    .join('');
+  return `<ul class="opcje">${items}</ul>`;
+}
+
+function answerLabel(task) {
+  if (task.type === 'zamkniete') {
+    return `${LITERY[task.poprawna]}. ${escapeHtml(task.odpowiedz)}`;
+  }
+  return escapeHtml(task.odpowiedz);
+}
+
+// The answer block is nested inside the task's own <li> so revealing it never
+// makes the student scroll away from the question.
+export function taskToHtml(task, index) {
+  return [
+    '<li class="zadanie">',
+    `<p class="zadanie-numer">Zadanie ${index + 1}.</p>`,
+    `<p class="zadanie-tresc">${escapeHtml(task.tresc)}</p>`,
+    optionsHtml(task),
+    '<div class="odpowiedz-blok" hidden>',
+    `<p><strong>Odpowiedź:</strong> ${answerLabel(task)}</p>`,
+    `<p class="rozwiazanie">${escapeHtml(task.rozwiazanie)}</p>`,
+    '</div>',
+    '</li>',
+  ].join('');
+}
+
+export function sheetToHtml(tasks) {
+  return tasks.map((task, i) => taskToHtml(task, i)).join('');
+}

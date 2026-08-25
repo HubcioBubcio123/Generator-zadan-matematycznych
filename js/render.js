@@ -1,6 +1,8 @@
 // Renders task objects to markup. Knows only the task contract, never which
 // topic produced a task, so new topics need no change here.
 
+import { chartSvg } from './chart.js';
+
 const LITERY = ['A', 'B', 'C', 'D'];
 
 function escapeHtml(text) {
@@ -26,6 +28,11 @@ function answerLabel(task) {
   return escapeHtml(task.odpowiedz);
 }
 
+function wykresHtml(task) {
+  if (!task.wykres) return '';
+  return `<div class="wykres-kontener">${chartSvg(task.wykres)}</div>`;
+}
+
 // The answer block is nested inside the task's own <li> so revealing it never
 // makes the student scroll away from the question.
 export function taskToHtml(task, index) {
@@ -33,6 +40,7 @@ export function taskToHtml(task, index) {
     '<li class="zadanie">',
     `<p class="zadanie-numer">Zadanie ${index + 1}.</p>`,
     `<p class="zadanie-tresc">${escapeHtml(task.tresc)}</p>`,
+    wykresHtml(task),
     optionsHtml(task),
     '<div class="odpowiedz-blok" hidden>',
     `<p><strong>Odpowiedź:</strong> ${answerLabel(task)}</p>`,

@@ -89,6 +89,10 @@ function setAnswersVisible(visible) {
   for (const block of listaZadan.querySelectorAll('.odpowiedz-blok')) {
     block.hidden = !visible;
   }
+  for (const curve of listaZadan.querySelectorAll('.wykres .krzywa')) {
+    if (visible) curve.removeAttribute('hidden');
+    else curve.setAttribute('hidden', '');
+  }
   przyciskOdpowiedzi.textContent = visible
     ? 'Ukryj odpowiedzi'
     : 'Pokaż odpowiedzi';

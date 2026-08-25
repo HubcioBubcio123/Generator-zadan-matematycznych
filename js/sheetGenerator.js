@@ -8,6 +8,10 @@ const MAX_COUNT = 12;
 // question text; after this many tries we accept a repeat rather than hang.
 const MAX_ATTEMPTS_PER_TASK = 40;
 
+function taskIdentity(task) {
+  return task.wykres ? `${task.tresc}|${JSON.stringify(task.wykres)}` : task.tresc;
+}
+
 export function clampCount(value) {
   const parsed = Math.trunc(Number(value));
   if (!Number.isFinite(parsed)) return MIN_COUNT;
@@ -84,7 +88,7 @@ export function generateSheet(options) {
     let task = null;
     for (let attempt = 0; attempt < MAX_ATTEMPTS_PER_TASK; attempt++) {
       const candidate = template.generate(options.difficulty, rng);
-      if (!seenTexts.has(candidate.tresc)) {
+      if (!seenTexts.has(taskIdentity(candidate))) {
         task = candidate;
         break;
       }
@@ -94,14 +98,14 @@ export function generateSheet(options) {
       // template in the pool that can still produce something new.
       for (const alternative of rng.shuffle(pool)) {
         const candidate = alternative.generate(options.difficulty, rng);
-        if (!seenTexts.has(candidate.tresc)) {
+        if (!seenTexts.has(taskIdentity(candidate))) {
           task = candidate;
           break;
         }
       }
     }
     if (task === null) continue; // pool truly exhausted; sheet will be short
-    seenTexts.add(task.tresc);
+    seenTexts.add(taskIdentity(task));
     sheet.push(task);
   }
 

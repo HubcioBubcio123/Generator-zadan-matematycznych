@@ -4,7 +4,7 @@
 // this project has no DOM test environment. Verified manually in the browser.
 
 import { formatNumber } from './format.js';
-import { CHART_SIZE, CHART_PADDING } from './chart.js';
+import { CHART_SIZE, CHART_PADDING, TOOLTIP_LABEL_WIDTH } from './chart.js';
 
 const PLOT = CHART_SIZE - CHART_PADDING * 2;
 
@@ -46,18 +46,22 @@ function updateMarker(svg, x) {
 
   const marker = svg.querySelector('.znacznik');
   const label = svg.querySelector('.etykieta-znacznika');
+  if (!marker || !label) return;
   marker.setAttribute('cx', px.toFixed(2));
   marker.setAttribute('cy', py.toFixed(2));
-  marker.hidden = false;
-  label.setAttribute('x', Math.min(px + 8, CHART_SIZE - 60).toFixed(2));
+  marker.removeAttribute('hidden');
+  label.setAttribute('x', Math.min(px + 8, CHART_SIZE - TOOLTIP_LABEL_WIDTH).toFixed(2));
   label.setAttribute('y', Math.max(py - 8, 12).toFixed(2));
   label.textContent = `(${formatNumber(Number(clampedX.toFixed(2)))}, ${formatNumber(Number(y.toFixed(2)))})`;
-  label.hidden = false;
+  label.removeAttribute('hidden');
 }
 
 function hideMarker(svg) {
-  svg.querySelector('.znacznik').hidden = true;
-  svg.querySelector('.etykieta-znacznika').hidden = true;
+  const marker = svg.querySelector('.znacznik');
+  const label = svg.querySelector('.etykieta-znacznika');
+  if (!marker || !label) return;
+  marker.setAttribute('hidden', '');
+  label.setAttribute('hidden', '');
 }
 
 export function initCharts(container) {

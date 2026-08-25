@@ -7,9 +7,10 @@ import { formatNumber } from './format.js';
 
 export const CHART_SIZE = 300;
 export const CHART_PADDING = 20;
+export const TOOLTIP_LABEL_WIDTH = 60;
 const PLOT = CHART_SIZE - CHART_PADDING * 2;
 const SAMPLE_COUNT = 100;
-const TARGET_GRID_LINES = 8;
+const TARGET_GRID_LINES = 10;
 
 function evaluate(wykres, x) {
   const { rownanie, a, b, c } = wykres;
@@ -62,6 +63,7 @@ function gridLines(min, max, step) {
 
 export function chartSvg(wykres) {
   const { rownanie, a, b, c, xMin, xMax } = wykres;
+  const safeRownanie = rownanie === 'kwadratowa' ? 'kwadratowa' : 'liniowa';
   if (!(xMin < xMax)) {
     throw new Error('wykres.xMin musi byc mniejsze od wykres.xMax.');
   }
@@ -93,6 +95,7 @@ export function chartSvg(wykres) {
 
   const xAxisY = py(0);
   const yAxisX = px(0);
+  const yLabelX = Math.min(Math.max(yAxisX - 6, CHART_PADDING + 20), CHART_SIZE - CHART_PADDING);
 
   const xTicks = gridLines(xMin, xMax, xStep)
     .filter((x) => x !== 0)
@@ -105,13 +108,13 @@ export function chartSvg(wykres) {
     .filter((y) => y !== 0)
     .map(
       (y) =>
-        `<text class="etykieta" x="${(yAxisX - 6).toFixed(2)}" y="${(py(y) + 4).toFixed(2)}" text-anchor="end">${formatNumber(y)}</text>`
+        `<text class="etykieta" x="${yLabelX.toFixed(2)}" y="${(py(y) + 4).toFixed(2)}" text-anchor="end">${formatNumber(y)}</text>`
     )
     .join('');
 
   return (
     `<svg class="wykres" viewBox="0 0 ${CHART_SIZE} ${CHART_SIZE}" xmlns="http://www.w3.org/2000/svg" ` +
-    `data-rownanie="${rownanie}" data-a="${a}" data-b="${b}" data-c="${c ?? 0}" ` +
+    `data-rownanie="${safeRownanie}" data-a="${a}" data-b="${b}" data-c="${c ?? 0}" ` +
     `data-x-min="${xMin}" data-x-max="${xMax}" data-y-min="${yMin}" data-y-max="${yMax}" ` +
     `data-x-step="${xStep}" data-y-step="${yStep}">` +
     `<g class="siatka-warstwa">${xGridLines}${yGridLines}</g>` +

@@ -193,7 +193,7 @@ button:hover {
   width: 100%;
   max-width: 20rem;
   height: auto;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 .wykres .siatka {

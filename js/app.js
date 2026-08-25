@@ -3,6 +3,7 @@ import { EXAM_MODES } from './examModes.js';
 import { generateSheet, clampCount } from './sheetGenerator.js';
 import { sheetToHtml } from './render.js';
 import { loadPreferences, savePreferences } from './storage.js';
+import { initCharts } from './chartInteraction.js';
 
 const el = (id) => document.getElementById(id);
 
@@ -121,6 +122,7 @@ function renderSheet(options) {
   clearError();
   ostatnieUstawienia = options;
   listaZadan.innerHTML = sheetToHtml(tasks);
+  initCharts(listaZadan);
   naglowekArkusza.textContent = sheetHeading({ ...options, count: tasks.length });
   setAnswersVisible(false);
   ekranMenu.hidden = true;

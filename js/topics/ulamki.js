@@ -1,17 +1,18 @@
 // Ułamki zwykłe (klasy 4-5).
 //
 // Poziomy trudności:
-//   łatwy   - mianowniki do 8, ten sam mianownik przy dodawaniu
-//   średni  - mianowniki do 12, różne mianowniki
-//   trudny  - mianowniki do 20, różne mianowniki, wynik może być liczbą mieszaną
+//   łatwy   - mianowniki do 8, ten sam mianownik, dwa składniki
+//   średni  - mianowniki do 12, różne mianowniki, dwa składniki
+//   trudny  - mianowniki do 20, różne mianowniki, dodawanie trzech ułamków
+//             (podwójne sprowadzanie do wspólnego mianownika)
 
 import { formatFraction, formatMixed } from '../format.js';
 import { buildOptions } from '../distractors.js';
 
 const RANGES = {
-  latwy: { denMax: 8, sameDenominator: true },
-  sredni: { denMax: 12, sameDenominator: false },
-  trudny: { denMax: 20, sameDenominator: false },
+  latwy: { denMax: 8, sameDenominator: true, termCount: 2 },
+  sredni: { denMax: 12, sameDenominator: false, termCount: 2 },
+  trudny: { denMax: 20, sameDenominator: false, termCount: 3 },
 };
 
 function gcd(a, b) {
@@ -26,37 +27,89 @@ function properFraction(rng, denMax) {
 }
 
 function dodawanie(difficulty, rng) {
-  const { denMax, sameDenominator } = RANGES[difficulty];
-  const a = properFraction(rng, denMax);
-  const b = sameDenominator
-    ? { num: rng.int(1, a.den - 1), den: a.den }
-    : properFraction(rng, denMax);
+  const { denMax, sameDenominator, termCount } = RANGES[difficulty];
+  const fractions = [properFraction(rng, denMax)];
+  for (let i = 1; i < termCount; i++) {
+    fractions.push(
+      sameDenominator
+        ? { num: rng.int(1, fractions[0].den - 1), den: fractions[0].den }
+        : properFraction(rng, denMax)
+    );
+  }
 
-  const num = a.num * b.den + b.num * a.den;
-  const den = a.den * b.den;
+  const den = fractions.reduce((acc, f) => acc * f.den, 1);
+  const num = fractions.reduce((acc, f) => acc + f.num * (den / f.den), 0);
   const correct = formatMixed(num, den);
 
   // Typowy błąd: dodanie liczników i mianowników osobno.
   const wrong = [
-    formatMixed(a.num + b.num, a.den + b.den),
+    formatMixed(
+      fractions.reduce((acc, f) => acc + f.num, 0),
+      fractions.reduce((acc, f) => acc + f.den, 0)
+    ),
     formatMixed(num + 1, den),
-    formatMixed(a.num * b.num, a.den * b.den),
+    formatMixed(
+      fractions.reduce((acc, f) => acc * f.num, 1),
+      fractions.reduce((acc, f) => acc * f.den, 1)
+    ),
   ];
 
   const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
   const divisor = gcd(num, den);
+  const conversions = fractions
+    .map((f) => `${f.num}/${f.den} = ${f.num * (den / f.den)}/${den}`)
+    .join(', ');
+  const numeratorSum = fractions.map((f) => f.num * (den / f.den)).join(' + ');
 
   return {
     id: 'ulamki_dodawanie',
     type: 'zamkniete',
-    tresc: `Oblicz: ${formatFraction(a.num, a.den)} + ${formatFraction(b.num, b.den)}`,
+    tresc: `Oblicz: ${fractions.map((f) => formatFraction(f.num, f.den)).join(' + ')}`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Sprowadzamy ułamki do wspólnego mianownika ${den}.\n` +
+      `${conversions}.\n` +
+      `Dodajemy liczniki: ${numeratorSum} = ${num}, czyli ${num}/${den}.\n` +
+      `Skracamy przez ${divisor}: wynik to ${correct}.`,
+  };
+}
+
+function odejmowanie(difficulty, rng) {
+  const { denMax, sameDenominator } = RANGES[difficulty];
+  let a = properFraction(rng, denMax);
+  let b = sameDenominator
+    ? { num: rng.int(1, a.den - 1), den: a.den }
+    : properFraction(rng, denMax);
+  if (a.num / a.den < b.num / b.den) [a, b] = [b, a];
+
+  const den = a.den * b.den;
+  const num = a.num * b.den - b.num * a.den;
+  const correct = formatFraction(num, den);
+
+  // Typowy błąd: odjęcie liczników i mianowników osobno, pominięcie sprowadzenia.
+  const denDiff = Math.max(1, a.den - b.den);
+  const wrong = [
+    formatFraction(Math.max(0, a.num - b.num), denDiff),
+    formatFraction(num + 1, den),
+    formatFraction(a.num * b.den, den),
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+  const divisor = gcd(Math.max(num, 1), den);
+
+  return {
+    id: 'ulamki_odejmowanie',
+    type: 'zamkniete',
+    tresc: `Oblicz: ${formatFraction(a.num, a.den)} - ${formatFraction(b.num, b.den)}`,
     odpowiedzi,
     poprawna,
     odpowiedz: correct,
     rozwiazanie:
       `Sprowadzamy ułamki do wspólnego mianownika ${den}.\n` +
       `${a.num}/${a.den} = ${a.num * b.den}/${den}, ${b.num}/${b.den} = ${b.num * a.den}/${den}.\n` +
-      `Dodajemy liczniki: ${a.num * b.den} + ${b.num * a.den} = ${num}, czyli ${num}/${den}.\n` +
+      `Odejmujemy liczniki: ${a.num * b.den} - ${b.num * a.den} = ${num}, czyli ${num}/${den}.\n` +
       `Skracamy przez ${divisor}: wynik to ${correct}.`,
   };
 }
@@ -105,6 +158,7 @@ function porownanie(difficulty, rng) {
 
 export const templates = [
   { id: 'ulamki_dodawanie', generate: dodawanie },
+  { id: 'ulamki_odejmowanie', generate: odejmowanie },
   { id: 'ulamki_mnozenie', generate: mnozenie },
   { id: 'ulamki_porownanie', generate: porownanie },
 ];

@@ -12,15 +12,15 @@ import { templates as funkcje } from './topics/funkcje.js';
 import { templates as liceumZaawansowane } from './topics/liceumZaawansowane.js';
 
 export const TOPICS = [
-  { key: 'liczby_naturalne', label: 'Dzialania na liczbach naturalnych', templates: liczbyNaturalne },
-  { key: 'ulamki', label: 'Ulamki zwykle', templates: ulamki },
-  { key: 'ulamki_dziesietne', label: 'Ulamki dziesietne', templates: ulamkiDziesietne },
+  { key: 'liczby_naturalne', label: 'Działania na liczbach naturalnych', templates: liczbyNaturalne },
+  { key: 'ulamki', label: 'Ułamki zwykłe', templates: ulamki },
+  { key: 'ulamki_dziesietne', label: 'Ułamki dziesiętne', templates: ulamkiDziesietne },
   { key: 'procenty', label: 'Procenty', templates: procenty },
   { key: 'geometria_plaska', label: 'Pola i obwody figur', templates: geometriaPlaska },
-  { key: 'rownania', label: 'Rownania i wyrazenia algebraiczne', templates: rownania },
-  { key: 'potegi_pitagoras', label: 'Potegi, pierwiastki i twierdzenie Pitagorasa', templates: potegiPitagoras },
+  { key: 'rownania', label: 'Równania i wyrażenia algebraiczne', templates: rownania },
+  { key: 'potegi_pitagoras', label: 'Potęgi, pierwiastki i twierdzenie Pitagorasa', templates: potegiPitagoras },
   { key: 'funkcje', label: 'Funkcja liniowa i kwadratowa', templates: funkcje },
-  { key: 'liceum_zaawansowane', label: 'Ciagi, trygonometria, geometria analityczna, prawdopodobienstwo', templates: liceumZaawansowane },
+  { key: 'liceum_zaawansowane', label: 'Ciągi, trygonometria, geometria analityczna, prawdopodobieństwo', templates: liceumZaawansowane },
 ];
 
 export const GRADES = [

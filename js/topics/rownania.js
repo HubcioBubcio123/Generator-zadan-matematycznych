@@ -1,9 +1,9 @@
-// Rownania liniowe i wyrazenia algebraiczne (klasy 7-8, liceum 1).
+// Równania liniowe i wyrażenia algebraiczne (klasy 7-8, liceum 1).
 //
-// Poziomy trudnosci:
-//   latwy   - ax + b = c, rozwiazanie calkowite, wspolczynniki do 10
-//   sredni  - ax + b = cx + d, rozwiazanie calkowite, wspolczynniki do 20
-//   trudny  - ax + b = cx + d, rozwiazanie moze byc ulamkiem dziesietnym
+// Poziomy trudności:
+//   łatwy   - ax + b = c, rozwiązanie całkowite, współczynniki do 10
+//   średni  - ax + b = cx + d, rozwiązanie całkowite, współczynniki do 20
+//   trudny  - ax + b = cx + d, rozwiązanie może być ułamkiem dziesiętnym
 
 import { formatNumber } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -58,7 +58,7 @@ function rownaniaLiniowe(difficulty, rng) {
 
   const correct = `x = ${formatNumber(root)}`;
 
-  // Typowe bledy: znak przy przenoszeniu, dzielenie przez zly wspolczynnik.
+  // Typowe błędy: znak przy przenoszeniu, dzielenie przez zły współczynnik.
   const wrong = [
     `x = ${formatNumber(-root)}`,
     `x = ${formatNumber(Number((root + 1).toFixed(4)))}`,
@@ -72,12 +72,12 @@ function rownaniaLiniowe(difficulty, rng) {
   return {
     id: 'rownania_liniowe',
     type: 'zamkniete',
-    tresc: `Rozwiaz rownanie: ${linearSide(a, b)} = ${linearSide(c, d)}`,
+    tresc: `Rozwiąż równanie: ${linearSide(a, b)} = ${linearSide(c, d)}`,
     odpowiedzi,
     poprawna,
     odpowiedz: correct,
     rozwiazanie:
-      `Przenosimy niewiadome na lewa strone, a liczby na prawa.\n` +
+      `Przenosimy niewiadome na lewą stronę, a liczby na prawą.\n` +
       `${coefDiff}x = ${constantDiff}.\n` +
       `Dzielimy obie strony przez ${coefDiff}: x = ${formatNumber(root)}.`,
   };
@@ -97,7 +97,7 @@ function uproszczenie(difficulty, rng) {
   return {
     id: 'rownania_uproszczenie',
     type: 'otwarte',
-    tresc: `Uprosc wyrazenie: ${linearSide(a, b)} + ${linearSide(c, d)}`,
+    tresc: `Uprość wyrażenie: ${linearSide(a, b)} + ${linearSide(c, d)}`,
     odpowiedz: simplified,
     rozwiazanie:
       `Grupujemy wyrazy podobne.\n` +

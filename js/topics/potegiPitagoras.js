@@ -1,9 +1,9 @@
-// Potegi, pierwiastki i twierdzenie Pitagorasa (klasy 7-8).
+// Potęgi, pierwiastki i twierdzenie Pitagorasa (klasy 7-8).
 //
-// Poziomy trudnosci:
-//   latwy   - podstawy do 5, wykladniki 2-3; trojki pitagorejskie bez skalowania
-//   sredni  - podstawy do 9, wykladniki 2-4; trojki skalowane do x3
-//   trudny  - podstawy do 12, wykladniki 2-5; trojki skalowane do x6
+// Poziomy trudności:
+//   łatwy   - podstawy do 5, wykładniki 2-3; trójki pitagorejskie bez skalowania
+//   średni  - podstawy do 9, wykładniki 2-4; trójki skalowane do x3
+//   trudny  - podstawy do 12, wykładniki 2-5; trójki skalowane do x6
 
 import { formatNumber } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -30,7 +30,7 @@ function potegi(difficulty, rng) {
   const value = base ** exponent;
   const correct = formatNumber(value);
 
-  // Typowy blad: pomnozenie podstawy przez wykladnik.
+  // Typowy błąd: pomnożenie podstawy przez wykładnik.
   const wrong = [
     formatNumber(base * exponent),
     formatNumber(base ** (exponent - 1)),
@@ -42,12 +42,12 @@ function potegi(difficulty, rng) {
   return {
     id: 'potegi_obliczanie',
     type: 'zamkniete',
-    tresc: `Oblicz wartosc potegi ${base}^${exponent}.`,
+    tresc: `Oblicz wartość potęgi ${base}^${exponent}.`,
     odpowiedzi,
     poprawna,
     odpowiedz: correct,
     rozwiazanie:
-      `Potegę obliczamy mnozac podstawe przez siebie ${exponent} razy.\n` +
+      `Potęgę obliczamy mnożąc podstawę przez siebie ${exponent} razy.\n` +
       `${Array(exponent).fill(base).join(' · ')} = ${correct}.`,
   };
 }
@@ -63,8 +63,8 @@ function pierwiastki(difficulty, rng) {
     tresc: `Oblicz pierwiastek kwadratowy z liczby ${radicand}.`,
     odpowiedz: formatNumber(root),
     rozwiazanie:
-      `Szukamy liczby, ktora podniesiona do kwadratu daje ${radicand}.\n` +
-      `${root} · ${root} = ${radicand}, wiec wynik to ${root}.`,
+      `Szukamy liczby, która podniesiona do kwadratu daje ${radicand}.\n` +
+      `${root} · ${root} = ${radicand}, więc wynik to ${root}.`,
   };
 }
 
@@ -80,8 +80,8 @@ function pitagoras(difficulty, rng) {
     id: 'pitagoras_przeciwprostokatna',
     type: 'otwarte',
     tresc:
-      `W trojkacie prostokatnym przyprostokatne maja dlugosci ${a} cm i ${b} cm. ` +
-      `Oblicz dlugosc przeciwprostokatnej.`,
+      `W trójkącie prostokątnym przyprostokątne mają długości ${a} cm i ${b} cm. ` +
+      `Oblicz długość przeciwprostokątnej.`,
     odpowiedz: `${formatNumber(c)} cm`,
     rozwiazanie:
       `Z twierdzenia Pitagorasa: a² + b² = c².\n` +

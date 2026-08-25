@@ -1,9 +1,9 @@
-// Dzialania na liczbach naturalnych (klasa 4).
+// Działania na liczbach naturalnych (klasa 4).
 //
-// Poziomy trudnosci:
-//   latwy   - dwa skladniki do 100, jedno dzialanie
-//   sredni  - dwa skladniki do 1000
-//   trudny  - trzy skladniki do 10000
+// Poziomy trudności:
+//   łatwy   - dwa składniki do 100, jedno działanie
+//   średni  - dwa składniki do 1000
+//   trudny  - trzy składniki do 10000
 
 import { formatNumber } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -20,7 +20,7 @@ function dodawanie(difficulty, rng) {
   const sum = numbers.reduce((a, b) => a + b, 0);
   const correct = formatNumber(sum);
 
-  // Typowe bledy: zgubione przeniesienie, dodanie zamiast odjecia ostatniej cyfry.
+  // Typowe błędy: zgubione przeniesienie, dodanie zamiast odjęcia ostatniej cyfry.
   const wrong = [
     formatNumber(sum - 10),
     formatNumber(sum + 1),
@@ -37,7 +37,7 @@ function dodawanie(difficulty, rng) {
     poprawna,
     odpowiedz: correct,
     rozwiazanie:
-      `Dodajemy kolejno skladniki.\n` +
+      `Dodajemy kolejno składniki.\n` +
       `${numbers.join(' + ')} = ${correct}.`,
   };
 }
@@ -54,7 +54,7 @@ function mnozenie(difficulty, rng) {
     tresc: `Oblicz: ${a} · ${b}`,
     odpowiedz: formatNumber(product),
     rozwiazanie:
-      `Mnozymy liczby przez siebie.\n` +
+      `Mnożymy liczby przez siebie.\n` +
       `${a} · ${b} = ${formatNumber(product)}.`,
   };
 }

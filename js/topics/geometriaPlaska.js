@@ -1,8 +1,8 @@
-// Geometria plaska: pola i obwody figur (klasy 4-6).
+// Geometria płaska: pola i obwody figur (klasy 4-6).
 //
-// Poziomy trudnosci:
-//   latwy   - wymiary calkowite do 12
-//   sredni  - wymiary calkowite do 40
+// Poziomy trudności:
+//   łatwy   - wymiary całkowite do 12
+//   średni  - wymiary całkowite do 40
 //   trudny  - wymiary z jednym miejscem po przecinku, do 40
 
 import { formatNumber } from '../format.js';
@@ -25,7 +25,7 @@ function poleProstokata(difficulty, rng) {
   const area = Number((a * b).toFixed(4));
   const correct = `${formatNumber(area)} cm²`;
 
-  // Typowy blad: policzony obwod zamiast pola.
+  // Typowy błąd: policzony obwód zamiast pola.
   const wrong = [
     `${formatNumber(Number((2 * (a + b)).toFixed(4)))} cm²`,
     `${formatNumber(Number((a + b).toFixed(4)))} cm²`,
@@ -38,13 +38,13 @@ function poleProstokata(difficulty, rng) {
     id: 'geometria_pole_prostokata',
     type: 'zamkniete',
     tresc:
-      `Prostokat ma boki dlugosci ${formatNumber(a)} cm i ${formatNumber(b)} cm. ` +
+      `Prostokąt ma boki długości ${formatNumber(a)} cm i ${formatNumber(b)} cm. ` +
       `Oblicz jego pole.`,
     odpowiedzi,
     poprawna,
     odpowiedz: correct,
     rozwiazanie:
-      `Pole prostokata to iloczyn dlugosci jego bokow: P = a · b.\n` +
+      `Pole prostokąta to iloczyn długości jego boków: P = a · b.\n` +
       `P = ${formatNumber(a)} · ${formatNumber(b)} = ${formatNumber(area)} cm².`,
   };
 }
@@ -58,11 +58,11 @@ function obwodProstokata(difficulty, rng) {
     id: 'geometria_obwod_prostokata',
     type: 'otwarte',
     tresc:
-      `Prostokat ma boki dlugosci ${formatNumber(a)} cm i ${formatNumber(b)} cm. ` +
-      `Oblicz jego obwod.`,
+      `Prostokąt ma boki długości ${formatNumber(a)} cm i ${formatNumber(b)} cm. ` +
+      `Oblicz jego obwód.`,
     odpowiedz: `${formatNumber(perimeter)} cm`,
     rozwiazanie:
-      `Obwod prostokata to Ob = 2 · (a + b).\n` +
+      `Obwód prostokąta to Ob = 2 · (a + b).\n` +
       `Ob = 2 · (${formatNumber(a)} + ${formatNumber(b)}) = ` +
       `${formatNumber(perimeter)} cm.`,
   };
@@ -77,11 +77,11 @@ function poleTrojkata(difficulty, rng) {
     id: 'geometria_pole_trojkata',
     type: 'otwarte',
     tresc:
-      `Trojkat ma podstawe dlugosci ${formatNumber(base)} cm ` +
-      `i wysokosc ${formatNumber(height)} cm. Oblicz jego pole.`,
+      `Trójkąt ma podstawę długości ${formatNumber(base)} cm ` +
+      `i wysokość ${formatNumber(height)} cm. Oblicz jego pole.`,
     odpowiedz: `${formatNumber(area)} cm²`,
     rozwiazanie:
-      `Pole trojkata to P = (a · h) : 2.\n` +
+      `Pole trójkąta to P = (a · h) : 2.\n` +
       `P = (${formatNumber(base)} · ${formatNumber(height)}) : 2 = ` +
       `${formatNumber(area)} cm².`,
   };

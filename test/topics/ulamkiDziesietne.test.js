@@ -10,13 +10,23 @@ function parsePl(text) {
   return Number(text.replace(',', '.'));
 }
 
-function numbersIn(text) {
-  return text.match(/\d+(?:,\d+)?/g).map(parsePl);
+// Parses "12,5 + 3,75 - 0,125" into its running total, independently of the
+// template's own arithmetic.
+function evalChain(tresc) {
+  const expr = tresc.replace('Oblicz: ', '').trim();
+  const tokens = expr.split(' ');
+  let total = parsePl(tokens[0]);
+  for (let i = 1; i < tokens.length; i += 2) {
+    const op = tokens[i];
+    const value = parsePl(tokens[i + 1]);
+    total = op === '+' ? total + value : total - value;
+  }
+  return total;
 }
 
-test('exports two templates with unique ids', () => {
-  assert.equal(templates.length, 2);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 2);
+test('exports three templates with unique ids', () => {
+  assert.equal(templates.length, 3);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 3);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -29,17 +39,25 @@ test('every template produces contract-valid tasks at every difficulty', () => {
   }
 });
 
-test('dodawanie: the answer equals the independently recomputed sum', () => {
+test('dodawanie: the answer equals the independently recomputed chain total', () => {
   const template = templates.find((t) => t.id === 'ulamki_dziesietne_dodawanie');
   for (const difficulty of LEVELS) {
     for (let seed = 0; seed < 200; seed++) {
       const task = template.generate(difficulty, createRng(seed));
-      const expected = numbersIn(task.tresc).reduce((a, b) => a + b, 0);
+      const expected = evalChain(task.tresc);
       assert.ok(
-        Math.abs(parsePl(task.odpowiedz) - expected) < 1e-9,
+        Math.abs(parsePl(task.odpowiedz) - expected) < 1e-6,
         `${task.tresc} -> ${task.odpowiedz}, expected ${expected}`
       );
     }
+  }
+});
+
+test('dodawanie: trudny mixes subtraction into the chain', () => {
+  const template = templates.find((t) => t.id === 'ulamki_dziesietne_dodawanie');
+  for (let seed = 0; seed < 100; seed++) {
+    const task = template.generate('trudny', createRng(seed));
+    assert.ok(task.tresc.includes(' - '), `trudny had no subtraction: "${task.tresc}"`);
   }
 });
 
@@ -48,9 +66,36 @@ test('mnozenie: the answer equals the independently recomputed product', () => {
   for (const difficulty of LEVELS) {
     for (let seed = 0; seed < 200; seed++) {
       const task = template.generate(difficulty, createRng(seed));
-      const expected = numbersIn(task.tresc).reduce((a, b) => a * b, 1);
-      assert.ok(Math.abs(parsePl(task.odpowiedz) - expected) < 1e-9);
+      const expected = task.tresc
+        .match(/\d+(?:,\d+)?/g)
+        .map(parsePl)
+        .reduce((a, b) => a * b, 1);
+      assert.ok(Math.abs(parsePl(task.odpowiedz) - expected) < 1e-6);
     }
+  }
+});
+
+test('dzielenie: the answer equals the independently recomputed quotient', () => {
+  const template = templates.find((t) => t.id === 'ulamki_dziesietne_dzielenie');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const [dividend, divisor] = task.tresc.match(/\d+(?:,\d+)?/g).map(parsePl);
+      const expected = dividend / divisor;
+      assert.ok(
+        Math.abs(parsePl(task.odpowiedz) - expected) < 1e-6,
+        `${task.tresc} -> ${task.odpowiedz}, expected ${expected}`
+      );
+    }
+  }
+});
+
+test('dzielenie: trudny divides by a decimal, not just a whole number', () => {
+  const template = templates.find((t) => t.id === 'ulamki_dziesietne_dzielenie');
+  for (let seed = 0; seed < 100; seed++) {
+    const task = template.generate('trudny', createRng(seed));
+    const [, divisorText] = task.tresc.match(/: ([\d,]+) : ([\d,]+)/).slice(1);
+    assert.ok(divisorText.includes(','), `trudny divisor was a whole number: "${task.tresc}"`);
   }
 });
 

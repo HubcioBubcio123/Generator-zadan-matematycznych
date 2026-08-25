@@ -10,9 +10,15 @@ function parsePl(text) {
   return Number(text.replace('x = ', '').replace(',', '.'));
 }
 
-test('exports two templates with unique ids', () => {
-  assert.equal(templates.length, 2);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 2);
+const toJs = (s) => s.replace(/,/g, '.').replace(/(\d)x/g, '$1*x').replace(/(\d)\(/g, '$1*(');
+
+function evaluateAt(expr, x) {
+  return Function('x', `return ${toJs(expr)};`)(x);
+}
+
+test('exports three templates with unique ids', () => {
+  assert.equal(templates.length, 3);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 3);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -33,10 +39,8 @@ test('rownania liniowe: substituting the answer satisfies the equation', () => {
       const equation = task.tresc.replace('Rozwiąż równanie: ', '');
       const [lhs, rhs] = equation.split('=');
       const x = parsePl(task.odpowiedz);
-      const evaluate = (side) =>
-        Function('x', `return ${side.replace(/,/g, '.').replace(/(\d)x/g, '$1*x')};`)(x);
       assert.ok(
-        Math.abs(evaluate(lhs) - evaluate(rhs)) < 1e-6,
+        Math.abs(evaluateAt(lhs, x) - evaluateAt(rhs, x)) < 1e-6,
         `${equation} with ${task.odpowiedz} does not balance`
       );
     }
@@ -53,16 +57,13 @@ test('rownania liniowe answers are stated in the form "x = ..."', () => {
 
 test('uproszczenie: the simplified expression matches at sample x values', () => {
   const template = templates.find((t) => t.id === 'rownania_uproszczenie');
-  const toJs = (s) => s.replace(/,/g, '.').replace(/(\d)x/g, '$1*x');
   for (const difficulty of LEVELS) {
     for (let seed = 0; seed < 200; seed++) {
       const task = template.generate(difficulty, createRng(seed));
       const original = task.tresc.replace('Uprość wyrażenie: ', '');
       for (const x of [-3, 0, 2, 7.5]) {
-        const a = Function('x', `return ${toJs(original)};`)(x);
-        const b = Function('x', `return ${toJs(task.odpowiedz)};`)(x);
         assert.ok(
-          Math.abs(a - b) < 1e-6,
+          Math.abs(evaluateAt(original, x) - evaluateAt(task.odpowiedz, x)) < 1e-6,
           `${original} != ${task.odpowiedz} at x=${x}`
         );
       }
@@ -75,5 +76,57 @@ test('easy equations have integer solutions', () => {
   for (let seed = 0; seed < 200; seed++) {
     const task = template.generate('latwy', createRng(seed));
     assert.ok(Number.isInteger(parsePl(task.odpowiedz)), task.odpowiedz);
+  }
+});
+
+test('nawiasy: substituting the answer satisfies the equation after expanding brackets', () => {
+  const template = templates.find((t) => t.id === 'rownania_nawiasy');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 300; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const equation = task.tresc.replace('Rozwiąż równanie: ', '');
+      const [lhs, rhs] = equation.split('=');
+      const x = parsePl(task.odpowiedz);
+      assert.ok(
+        Math.abs(evaluateAt(lhs, x) - evaluateAt(rhs, x)) < 1e-6,
+        `${equation} with ${task.odpowiedz} does not balance`
+      );
+    }
+  }
+});
+
+test('nawiasy: every task actually contains a bracket to expand', () => {
+  const template = templates.find((t) => t.id === 'rownania_nawiasy');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 100; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      assert.ok(task.tresc.includes('('), `no bracket in: ${task.tresc}`);
+    }
+  }
+});
+
+test('nawiasy: trudny puts x on both sides of the equation', () => {
+  const template = templates.find((t) => t.id === 'rownania_nawiasy');
+  for (const difficulty of ['latwy', 'sredni']) {
+    for (let seed = 0; seed < 100; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const [, rhs] = task.tresc.split('=');
+      assert.ok(!rhs.includes('x'), `${difficulty} rhs should have no x: ${task.tresc}`);
+    }
+  }
+  for (let seed = 0; seed < 100; seed++) {
+    const task = template.generate('trudny', createRng(seed));
+    const [, rhs] = task.tresc.split('=');
+    assert.ok(rhs.includes('x'), `trudny rhs should contain x: ${task.tresc}`);
+  }
+});
+
+test('nawiasy answers are stated in the form "x = ..."', () => {
+  const template = templates.find((t) => t.id === 'rownania_nawiasy');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 100; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      assert.match(task.odpowiedz, /^x = -?\d+(,\d+)?$/, task.odpowiedz);
+    }
   }
 });

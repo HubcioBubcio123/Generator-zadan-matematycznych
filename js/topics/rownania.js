@@ -4,6 +4,11 @@
 //   łatwy   - ax + b = c, rozwiązanie całkowite, współczynniki do 10
 //   średni  - ax + b = cx + d, rozwiązanie całkowite, współczynniki do 20
 //   trudny  - ax + b = cx + d, rozwiązanie może być ułamkiem dziesiętnym
+//
+// rownania_nawiasy wymaga dodatkowo rozwinięcia nawiasu przed rozwiązaniem:
+//   łatwy   - p(x + m) = c
+//   średni  - p(x + m) + b = c
+//   trudny  - p(x + m) + b = qx + d (niewiadoma po obu stronach)
 
 import { formatNumber } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -12,6 +17,12 @@ const RANGES = {
   latwy: { coefMax: 10, bothSides: false, integerRoot: true },
   sredni: { coefMax: 20, bothSides: true, integerRoot: true },
   trudny: { coefMax: 20, bothSides: true, integerRoot: false },
+};
+
+const BRACKET_RANGES = {
+  latwy: { pMax: 5, mMax: 10, bMax: 0, bothSides: false },
+  sredni: { pMax: 8, mMax: 15, bMax: 20, bothSides: false },
+  trudny: { pMax: 8, mMax: 15, bMax: 20, bothSides: true },
 };
 
 // Renders "3x + 5" / "3x - 5" / "-3x" correctly, never "3x + -5".
@@ -107,7 +118,67 @@ function uproszczenie(difficulty, rng) {
   };
 }
 
+function nonZero(rng, max) {
+  const v = rng.int(-max, max);
+  return v === 0 ? 1 : v;
+}
+
+function trailingTerm(value) {
+  if (value === 0) return '';
+  return value > 0 ? ` + ${value}` : ` - ${Math.abs(value)}`;
+}
+
+function rownaniaNawiasy(difficulty, rng) {
+  const { pMax, mMax, bMax, bothSides } = BRACKET_RANGES[difficulty];
+  const root = rng.int(-10, 10);
+  const p = nonZero(rng, pMax);
+  const m = nonZero(rng, mMax);
+  const b = bMax > 0 ? rng.int(-bMax, bMax) : 0;
+
+  const lhs = `${p}(${linearSide(1, m)})${trailingTerm(b)}`;
+
+  let rhs, wrongRoot;
+  if (bothSides) {
+    let q = nonZero(rng, pMax);
+    if (q === p) q += p > 0 ? 1 : -1;
+    if (q === 0) q += 1;
+    const d = p * (root + m) + b - q * root;
+    rhs = linearSide(q, d);
+    // Typowy błąd: pominięcie mnożenia m przez p przy rozwijaniu nawiasu.
+    wrongRoot = (d - m - b) / (p - q);
+  } else {
+    const c = p * (root + m) + b;
+    rhs = formatNumber(c);
+    wrongRoot = (c - m - b) / p;
+  }
+
+  const correct = `x = ${formatNumber(root)}`;
+  const wrong = [
+    `x = ${formatNumber(-root)}`,
+    `x = ${formatNumber(Number((root + 1).toFixed(4)))}`,
+    `x = ${formatNumber(Number(wrongRoot.toFixed(4)))}`,
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+  const expandedLhs = linearSide(p, p * m + b);
+
+  return {
+    id: 'rownania_nawiasy',
+    type: 'zamkniete',
+    tresc: `Rozwiąż równanie: ${lhs} = ${rhs}`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Rozwijamy nawias, mnożąc każdy składnik przez ${p}.\n` +
+      `${expandedLhs} = ${rhs}.\n` +
+      `Przenosimy niewiadome na lewą stronę, a liczby na prawą, i dzielimy, ` +
+      `otrzymując ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_liniowe', generate: rownaniaLiniowe },
   { id: 'rownania_uproszczenie', generate: uproszczenie },
+  { id: 'rownania_nawiasy', generate: rownaniaNawiasy },
 ];

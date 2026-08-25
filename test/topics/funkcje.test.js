@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports three templates with unique ids', () => {
-  assert.equal(templates.length, 3);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 3);
+test('exports four templates with unique ids', () => {
+  assert.equal(templates.length, 4);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -72,6 +72,31 @@ test('pierwiastki: both stated roots satisfy the equation', () => {
         const value = Function('x', `return ${js};`)(r);
         assert.ok(Math.abs(value) < 1e-6, `f(${r}) = ${value} for ${body}`);
       }
+    }
+  }
+});
+
+test('wierzcholek: q equals f(p), and p is genuinely the extremum of f', () => {
+  const template = templates.find((t) => t.id === 'funkcja_kwadratowa_wierzcholek');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 300; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const body = task.tresc.match(/f\(x\) = ([^.]+)\./)[1];
+      const js = body
+        .replace(/,/g, '.')
+        .replace(/x²/g, '(x*x)')
+        .replace(/(\d)\(x\*x\)/g, '$1*(x*x)')
+        .replace(/(\d)x/g, '$1*x');
+      const f = (x) => Function('x', `return ${js};`)(x);
+      const [pText, qText] = task.odpowiedz.replace(/[()]/g, '').split(',').map((s) => s.trim());
+      const p = parsePl(pText);
+      const q = parsePl(qText);
+      assert.ok(Math.abs(f(p) - q) < 1e-6, `f(${p}) != ${q} for ${body}`);
+      const left = f(p - 1);
+      const right = f(p + 1);
+      const isMin = left >= q - 1e-6 && right >= q - 1e-6;
+      const isMax = left <= q + 1e-6 && right <= q + 1e-6;
+      assert.ok(isMin || isMax, `p=${p} is not an extremum for ${body}`);
     }
   }
 });

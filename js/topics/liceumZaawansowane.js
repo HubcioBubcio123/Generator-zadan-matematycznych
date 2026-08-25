@@ -4,7 +4,10 @@
 // Poziomy trudności:
 //   łatwy   - małe wartości, n do 10, współrzędne do 6
 //   średni  - n do 25, współrzędne do 12
-//   trudny  - n do 60, współrzędne do 20, większe skalowania trójkątów
+//   trudny  - n do 60, współrzędne do 20, większe skalowania trójkątów;
+//             trygonometria korzysta z kątów specjalnych (30/45/60 stopni)
+//             zamiast trójek pitagorejskich; prawdopodobieństwo dotyczy
+//             rzutu dwiema kostkami (36 wyników zamiast 6)
 
 import { formatNumber, formatFraction } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -21,6 +24,20 @@ const RANGES = {
   sredni: { nMax: 25, coordMax: 12, scaleMax: 2, diffMax: 12 },
   trudny: { nMax: 60, coordMax: 20, scaleMax: 4, diffMax: 20 },
 };
+
+const SPECIAL_ANGLES = {
+  30: { sin: 0.5, cos: Math.sqrt(3) / 2 },
+  45: { sin: Math.SQRT1_2, cos: Math.SQRT1_2 },
+  60: { sin: Math.sqrt(3) / 2, cos: 0.5 },
+};
+
+const TWO_DICE_EVENTS = [
+  { opis: 'suma oczek wynosi 7', favourable: 6 },
+  { opis: 'suma oczek jest parzysta', favourable: 18 },
+  { opis: 'suma oczek jest większa od 9', favourable: 6 },
+  { opis: 'na obu kostkach wypadnie ta sama liczba oczek', favourable: 6 },
+  { opis: 'suma oczek jest mniejsza od 5', favourable: 6 },
+];
 
 function ciagArytmetyczny(difficulty, rng) {
   const { nMax, diffMax } = RANGES[difficulty];
@@ -53,7 +70,56 @@ function ciagArytmetyczny(difficulty, rng) {
   };
 }
 
+function ciagSuma(difficulty, rng) {
+  const { nMax, diffMax } = RANGES[difficulty];
+  const a1 = rng.int(-diffMax, diffMax);
+  const r = rng.int(1, diffMax) * (rng.bool() ? 1 : -1);
+  const n = rng.int(3, nMax);
+  const sum = (n / 2) * (2 * a1 + (n - 1) * r);
+  const correct = formatNumber(sum);
+
+  return {
+    id: 'ciag_arytmetyczny_suma',
+    type: 'otwarte',
+    tresc:
+      `W ciągu arytmetycznym pierwszy wyraz wynosi ${a1}, ` +
+      `a różnica wynosi ${r}. Oblicz sumę pierwszych ${n} wyrazów tego ciągu.`,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Korzystamy ze wzoru Sₙ = (n : 2) · (2a₁ + (n - 1) · r).\n` +
+      `S${n} = (${n} : 2) · (2 · ${a1} + (${n} - 1) · ${r}) = ` +
+      `${formatNumber(n / 2)} · ${2 * a1 + (n - 1) * r} = ${correct}.`,
+  };
+}
+
+function trygonometriaSpecjalna(rng) {
+  const angle = rng.pick([30, 45, 60]);
+  const hypotenuse = rng.int(2, 10) * 2;
+  const wantOpposite = rng.bool();
+  const ratio = wantOpposite ? SPECIAL_ANGLES[angle].sin : SPECIAL_ANGLES[angle].cos;
+  const roundedRatio = Number(ratio.toFixed(4));
+  const side = Number((hypotenuse * ratio).toFixed(4));
+  const label = wantOpposite ? 'leżącej naprzeciw kąta α' : 'przyległej do kąta α';
+  const trigName = wantOpposite ? 'sinusa' : 'kosinusa';
+  const trigSymbol = wantOpposite ? 'sin' : 'cos';
+
+  return {
+    id: 'trygonometria_trojkat_prostokatny',
+    type: 'otwarte',
+    tresc:
+      `W trójkącie prostokątnym kąt ostry α ma miarę ${angle}°, ` +
+      `a przeciwprostokątna ma długość ${hypotenuse} cm. ` +
+      `Oblicz długość przyprostokątnej ${label}.`,
+    odpowiedz: `${formatNumber(side)} cm`,
+    rozwiazanie:
+      `Korzystamy z wartości ${trigName} kąta ${angle}°: ${trigSymbol} ${angle}° = ${formatNumber(roundedRatio)}.\n` +
+      `Szukana przyprostokątna = ${hypotenuse} · ${formatNumber(roundedRatio)} = ${formatNumber(side)} cm.`,
+  };
+}
+
 function trygonometria(difficulty, rng) {
+  if (difficulty === 'trudny') return trygonometriaSpecjalna(rng);
+
   const { scaleMax } = RANGES[difficulty];
   const [a0, , c0] = rng.pick(TRIPLES);
   const scale = rng.int(1, scaleMax);
@@ -103,7 +169,7 @@ function odleglosc(difficulty, rng) {
   };
 }
 
-function prawdopodobienstwo(difficulty, rng) {
+function prawdopodobienstwoJednaKostka(rng) {
   const events = [
     { opis: 'wypadnie liczba parzysta', favourable: 3 },
     { opis: 'wypadnie liczba większa od 4', favourable: 2 },
@@ -128,8 +194,33 @@ function prawdopodobienstwo(difficulty, rng) {
   };
 }
 
+function prawdopodobienstwoDwieKostki(rng) {
+  const event = rng.pick(TWO_DICE_EVENTS);
+  const correct = formatFraction(event.favourable, 36);
+
+  return {
+    id: 'prawdopodobienstwo_kostka',
+    type: 'otwarte',
+    tresc:
+      `Rzucamy dwiema sześciennymi kostkami do gry. ` +
+      `Oblicz prawdopodobieństwo zdarzenia: ${event.opis}.`,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Wszystkich możliwych wyników jest 6 · 6 = 36.\n` +
+      `Zdarzeniu sprzyja ${event.favourable} wyników.\n` +
+      `P = ${event.favourable}/36 = ${correct}.`,
+  };
+}
+
+function prawdopodobienstwo(difficulty, rng) {
+  return difficulty === 'trudny'
+    ? prawdopodobienstwoDwieKostki(rng)
+    : prawdopodobienstwoJednaKostka(rng);
+}
+
 export const templates = [
   { id: 'ciag_arytmetyczny_wyraz', generate: ciagArytmetyczny },
+  { id: 'ciag_arytmetyczny_suma', generate: ciagSuma },
   { id: 'trygonometria_trojkat_prostokatny', generate: trygonometria },
   { id: 'geometria_analityczna_odleglosc', generate: odleglosc },
   { id: 'prawdopodobienstwo_kostka', generate: prawdopodobienstwo },

@@ -23,9 +23,9 @@ function fractionValue(text) {
   return Number(text.replace(',', '.'));
 }
 
-test('exports three templates with unique ids', () => {
-  assert.equal(templates.length, 3);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 3);
+test('exports four templates with unique ids', () => {
+  assert.equal(templates.length, 4);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -56,6 +56,22 @@ test('dodawanie: the answer equals the independently recomputed sum', () => {
   }
 });
 
+test('dodawanie: trudny sums three fractions instead of two', () => {
+  const template = templates.find((t) => t.id === 'ulamki_dodawanie');
+  for (const difficulty of ['latwy', 'sredni']) {
+    for (let seed = 0; seed < 50; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const parts = task.tresc.match(/(\d+)\/(\d+)/g);
+      assert.equal(parts.length, 2, `${difficulty} should sum exactly 2 fractions`);
+    }
+  }
+  for (let seed = 0; seed < 50; seed++) {
+    const task = template.generate('trudny', createRng(seed));
+    const parts = task.tresc.match(/(\d+)\/(\d+)/g);
+    assert.equal(parts.length, 3, `trudny should sum exactly 3 fractions`);
+  }
+});
+
 test('mnozenie: the answer equals the independently recomputed product', () => {
   const template = templates.find((t) => t.id === 'ulamki_mnozenie');
   for (const difficulty of LEVELS) {
@@ -67,6 +83,35 @@ test('mnozenie: the answer equals the independently recomputed product', () => {
         return acc * (n / d);
       }, 1);
       assert.ok(Math.abs(fractionValue(task.odpowiedz) - expected) < 1e-9);
+    }
+  }
+});
+
+test('odejmowanie: the answer equals the independently recomputed difference', () => {
+  const template = templates.find((t) => t.id === 'ulamki_odejmowanie');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const parts = task.tresc.match(/(\d+)\/(\d+)/g);
+      const [a, b] = parts.map((p) => {
+        const [n, d] = p.split('/').map(Number);
+        return n / d;
+      });
+      const expected = a - b;
+      assert.ok(
+        Math.abs(fractionValue(task.odpowiedz) - expected) < 1e-9,
+        `${task.tresc} -> ${task.odpowiedz}, expected ${expected}`
+      );
+    }
+  }
+});
+
+test('odejmowanie: never produces a negative result', () => {
+  const template = templates.find((t) => t.id === 'ulamki_odejmowanie');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      assert.ok(fractionValue(task.odpowiedz) >= 0, `negative result: ${task.odpowiedz}`);
     }
   }
 });

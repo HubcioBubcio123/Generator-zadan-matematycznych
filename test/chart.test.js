@@ -104,3 +104,20 @@ test('grid steps are always 1, 2, or 5 times a power of ten', () => {
 test('rejects a degenerate domain the same way callers should never produce', () => {
   assert.throws(() => chartSvg({ rownanie: 'liniowa', a: 1, b: 0, xMin: 5, xMax: 5 }));
 });
+
+test('the curve is hidden by default (it is the answer, revealed later)', () => {
+  const svg = chartSvg(LINIOWA);
+  assert.match(svg, /<path[^>]*class="krzywa"[^>]*hidden/);
+});
+
+test('an empty student-drawing path is present and visible by default', () => {
+  const svg = chartSvg(LINIOWA);
+  assert.match(svg, /<path class="rysunek-ucznia" d="" fill="none">/);
+  assert.ok(!/<path class="rysunek-ucznia"[^>]*hidden/.test(svg), 'student path should not be hidden');
+});
+
+test('no marker or tooltip elements are emitted', () => {
+  const svg = chartSvg(LINIOWA);
+  assert.ok(!svg.includes('znacznik'), 'marker element should be removed');
+  assert.ok(!svg.includes('etykieta-znacznika'), 'tooltip element should be removed');
+});

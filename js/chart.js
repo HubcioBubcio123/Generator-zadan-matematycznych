@@ -7,7 +7,6 @@ import { formatNumber } from './format.js';
 
 export const CHART_SIZE = 300;
 export const CHART_PADDING = 20;
-export const TOOLTIP_LABEL_WIDTH = 60;
 const PLOT = CHART_SIZE - CHART_PADDING * 2;
 const SAMPLE_COUNT = 100;
 const TARGET_GRID_LINES = 10;
@@ -121,10 +120,9 @@ export function chartSvg(wykres) {
     `<line class="os" x1="${CHART_PADDING}" y1="${xAxisY.toFixed(2)}" x2="${CHART_SIZE - CHART_PADDING}" y2="${xAxisY.toFixed(2)}" />` +
     `<line class="os" x1="${yAxisX.toFixed(2)}" y1="${CHART_PADDING}" x2="${yAxisX.toFixed(2)}" y2="${CHART_SIZE - CHART_PADDING}" />` +
     `<g class="etykiety-warstwa">${xTicks}${yTicks}</g>` +
-    `<path class="krzywa" d="${pathD}" fill="none" />` +
+    `<path class="krzywa" d="${pathD}" fill="none" hidden></path>` +
+    `<path class="rysunek-ucznia" d="" fill="none"></path>` +
     `<rect class="nakladka" x="${CHART_PADDING}" y="${CHART_PADDING}" width="${PLOT}" height="${PLOT}" fill="transparent" />` +
-    `<circle class="znacznik" r="4" cx="0" cy="0" hidden></circle>` +
-    `<text class="etykieta-znacznika" x="0" y="0" hidden></text>` +
     `</svg>`
   );
 }

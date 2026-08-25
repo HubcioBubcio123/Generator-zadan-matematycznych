@@ -1,240 +1,208 @@
 # Interactive Function Charts — Design Document
 
 **Date:** 2026-08-25
-**Status:** Approved
+**Status:** Approved (v2 — supersedes the original hover-to-read design below)
+
+**Revision note:** The original version of this document (implemented, then
+found in manual testing to be very hard to use — precisely hovering over an
+exact point on a curve is genuinely difficult) specified two "read the
+answer off the graph" templates using hover/drag-to-trace. That interaction
+model is replaced entirely by this revision with a "draw the function
+yourself" model: the student is given the formula, sketches it freehand on
+a blank grid, then reveals the correct curve overlaid on their own sketch to
+compare. The hover-to-trace code this originally shipped is removed as part
+of this revision.
 
 ## Purpose
 
-Add interactive, hover/tap-to-trace graphs of linear and quadratic functions
-to the generator, and two new "read from the graph" task templates in the
-`funkcje` topic where the graph itself *is* the question (no formula is
-given in the text — the student must read the answer off the chart).
+Add a **freehand drawing** capability to the generator's function graphs,
+and two new task templates in the `funkcje` topic — `funkcja_liniowa_narysuj_wykres`
+and `funkcja_kwadratowa_narysuj_wykres` — where the student is given a
+function's formula and asked to sketch its graph on a blank grid. Clicking
+"Pokaż odpowiedzi" overlays the correct curve on top of the student's own
+sketch, in a contrasting color, so they can compare directly.
 
 ## Success Criteria
 
-- A new optional `wykres` field on the task contract lets any template attach
-  a graph; existing templates and tests are unaffected.
-- The graph is a self-contained inline SVG: axes, a "nice-numbers" grid, and
-  the function curve, auto-scaled to fit its domain.
-- Hovering (mouse) or dragging a finger (touch, via Pointer Events) across
-  the graph moves a marker along the curve and shows its `(x, y)` coordinates
-  in Polish decimal-comma format.
-- Two new templates — `funkcja_liniowa_wykres_miejsce_zerowe` and
-  `funkcja_kwadratowa_wykres_wierzcholek` — show only the graph and ask the
-  student to read off the zero / vertex. Answers are still self-checked via
-  the existing "Pokaż odpowiedzi" flow; no new grading capability is added.
-- `chart.js` (pure SVG generation) is fully unit-tested with `node --test`,
-  independently recomputing sampled points the same way every other template
-  test recomputes its answer.
-- The graph prints cleanly as a static image (interactivity is a no-op on
-  paper, which is expected and requires no special handling).
+- The `wykres` field on the task contract (already established) still
+  describes the function; `chart.js` still renders the same axes/grid, but
+  the curve itself now starts **hidden** and reveals in sync with the
+  existing "Pokaż odpowiedzi" answer-toggle — no new reveal mechanism.
+- Dragging (mouse or touch, via Pointer Events) across the grid draws a
+  freehand line following the pointer — multiple separate strokes are
+  supported without erasing earlier ones.
+- The two new templates state the function's formula directly in `tresc`
+  (the opposite of the superseded design) and attach a `wykres` descriptor
+  used purely to draw the blank grid and the (initially hidden) correct
+  curve.
+- A printed sheet needs no special-casing: unrevealed, it's the question
+  text + a blank grid (a real paper worksheet); revealed, it's the same
+  grid with the correct curve visible (an answer key) — exactly how every
+  other template's answer already behaves via the existing print stylesheet.
+- `chart.js` remains fully unit-tested and pure; the removed hover-tracing
+  code and its dead CSS are deleted rather than left unused.
 
-## Non-Goals (v1)
+## Non-Goals (v2)
 
-- Auto-grading a click/drag on the graph as the answer. Self-check only, same
-  as the rest of the app.
-- Charts for any topic other than `funkcje` (liniowa/kwadratowa). Trygonometria,
-  ciągi, etc. are not in scope here.
-- Zoom or pan. The domain is fixed per task, chosen by the template so the
-  interesting feature (root/vertex) is comfortably visible.
-- Final difficulty tuning. The two new templates get provisional,
-  legibility-tuned ranges (see below) that are **explicitly flagged for
-  revision** once real podstawa programowa / matura reference material is
-  available — same open item as the app's general difficulty calibration.
+- Auto-grading how closely the student's freehand sketch matches the
+  correct curve. Self-check only, same as the rest of the app: the student
+  visually compares their own drawing to the revealed overlay.
+- An undo/clear-drawing button. Not requested; can be added later if it
+  turns out to matter in practice.
+- Charts for any topic other than `funkcje`. Trygonometria, ciągi, etc. are
+  still not in scope.
+- Final difficulty tuning — same open item as before, now simplified since
+  these two templates reuse the existing `RANGES`/`VERTEX_RANGES` (see
+  below) rather than needing their own legibility-tuned ranges.
 
-## Data Contract
+## Data Contract — unchanged
 
-A new optional field on the task object, present only when a task has a graph:
+The `wykres` field's shape (`{ rownanie, a, b, c, xMin, xMax }`) and its
+`taskShape.js` validation are unchanged from the original design. Only how
+templates use it, and how `chart.js` renders it, change.
 
-```js
-wykres: {
-  rownanie: 'liniowa' | 'kwadratowa',
-  a: number,
-  b: number,
-  c: number,     // required and meaningful only when rownanie === 'kwadratowa'
-  xMin: number,
-  xMax: number,  // xMin < xMax; horizontal domain to draw
-}
-```
+## Chart Rendering (`js/chart.js`) — changes
 
-The template only picks `xMin`/`xMax` (a window with margin around the
-feature being asked about). The vertical range is never specified by the
-template — `chart.js` computes it by sampling `f(x)` across the domain.
+`chartSvg(wykres)` keeps the same grid/axis/tick-label/curve-sampling logic
+entirely as-is (already correct and tested: nice-numbers grid, y-range
+padding, off-canvas label clamping). Only the elements after the curve
+change:
 
-`js/taskShape.js` gains a light validation block, run only when `wykres` is
-present: `rownanie` must be one of the two allowed strings; `a`, `b`, `xMin`,
-`xMax` must be finite numbers with `xMin < xMax`; `c` must be finite when
-`rownanie === 'kwadratowa'`. This does not check mathematical correctness —
-that remains the responsibility of the owning template's own test, exactly
-like every other field on the contract.
+- The curve `<path class="krzywa">` now renders with a `hidden` attribute
+  by default (it's the answer, not shown until revealed).
+- **Removed:** the marker `<circle class="znacznik">` and tooltip
+  `<text class="etykieta-znacznika">` — no longer needed once hovering is
+  replaced by drawing.
+- **Added:** an empty `<path class="rysunek-ucznia" d="" fill="none">` —
+  the student's freehand drawing target, populated live by
+  `chartInteraction.js`. Starts empty (nothing drawn) and is always visible
+  (not gated by the answer-reveal toggle — it's the student's own work, not
+  the answer).
+- The transparent `<rect class="nakladka">` overlay is unchanged — still
+  the interaction hit-target, now for drawing instead of hovering.
 
-## Chart Rendering (`js/chart.js`)
+The `data-*` attributes stay as they are (harmless, still useful for tests
+and any future consumer) even though `chartInteraction.js` no longer reads
+the function coefficients from them — freehand drawing only needs pixel
+geometry, not the function itself.
 
-A new, pure, dependency-free module. Single export:
+## Drawing (`js/chartInteraction.js`) — replaces hover-tracing entirely
 
-```js
-chartSvg(wykres) => string   // self-contained <svg>...</svg> markup
-```
-
-Responsibilities:
-
-1. **Sample** `f(x)` at a fixed number of points (e.g. 100) evenly spaced
-   across `[xMin, xMax]`.
-2. **Compute the y-range** from the sampled values, padded by ~10%, and
-   widened if necessary so `y = 0` is always included (keeps the x-axis
-   visible even for a task whose feature sits away from it).
-3. **Pick "nice" grid steps** for both axes independently: choose a step from
-   `{1, 2, 5} × 10^k` that yields a gridline count closest to a target (~8–10)
-   for that axis's span. This keeps the grid legible regardless of how wide
-   or narrow the computed range turns out to be, instead of assuming every
-   task produces a small integer range.
-4. **Render**, inside a fixed `viewBox`:
-   - light grid lines at each computed step, both axes,
-   - bold axes through `x = 0` / `y = 0` with a few numeric tick labels,
-   - the curve as a single sampled `<path>` (a polyline through the sampled
-     points — this handles lines and parabolas identically, no special-casing
-     needed per equation type),
-   - a transparent `<rect>` overlay covering the plot area (the interactivity
-     layer's hit target),
-   - a hidden marker `<circle>` and tooltip `<text>`, toggled by
-     `chartInteraction.js`.
-5. **Embed the inputs as `data-*` attributes** on the root `<svg>`
-   (`data-rownanie`, `data-a`, `data-b`, `data-c`, `data-x-min`, `data-x-max`,
-   plus the computed `data-y-min`/`data-y-max` needed to convert pixel
-   coordinates back to function-space) so the interactivity layer never has
-   to re-derive scaling logic or trust anything beyond reading these back.
-
-`render.js`'s `taskToHtml` calls `chartSvg(task.wykres)` and embeds the
-result **unescaped** when `task.wykres` is present — safe because this
-markup is entirely generated by our own trusted code from numeric inputs,
-never from user-controlled text (unlike `tresc`, which stays escaped).
-
-## Interactivity (`js/chartInteraction.js`)
-
-A new, DOM-only module (like `app.js`, not unit-testable without a DOM
-environment — this project has none, by design, per the no-dependencies
-rule). Single export:
+Single export, same name as before, entirely new body:
 
 ```js
 initCharts(container)   // wires up every chart SVG found inside `container`
 ```
 
-For each chart SVG found:
+For each chart SVG found, on its `.nakladka` overlay:
 
-- Reads back the `data-*` attributes (coefficients + domain/range).
-- Attaches `pointerdown`, `pointermove`, and `pointerup`/`pointerleave`
-  listeners to the transparent overlay `<rect>`. **Pointer Events are used
-  instead of separate mouse/touch handlers** so hovering with a mouse and
-  dragging a finger on a touch screen both work through the same code path —
-  no separate mobile handling needed.
-- On move (while pointer is down, or on hover for mouse): converts the
-  pointer's client position to function-space `x` using the SVG's
-  `viewBox`/`getBoundingClientRect()` and the stored domain, computes
-  `y = f(x)` from the stored coefficients, moves the marker circle to
-  `(x, y)` in SVG pixel space, and updates the tooltip text via the existing
-  `formatNumber` helper (Polish comma, consistent with every other rendered
-  number in the app).
-- On pointer up/leave: hides the marker and tooltip.
+- `pointerdown`: capture the pointer (`setPointerCapture`, now for **every**
+  pointer type — mouse included — since dragging, not hovering, is the only
+  interaction now), start a new subpath (`M x y`) on `.rysunek-ucznia` at
+  the converted point, and mark "currently drawing."
+- `pointermove` (while drawing): convert the pointer's client position to
+  an SVG-space point (via `getBoundingClientRect()`/`viewBox`, same
+  technique as before) and append it (`L x y`) to the path's `d` attribute.
+  The point is clamped to `[CHART_PADDING, CHART_SIZE - CHART_PADDING]` on
+  both axes so a drag that leaves the chart still draws up to the plot's
+  edge rather than escaping the visible grid.
+- `pointerup`/`pointercancel`: stop drawing (the next `pointerdown` starts a
+  **new** subpath, so multiple separate strokes accumulate on the same path
+  without erasing earlier ones — a real freehand sketch, not a single
+  continuous line).
 
-`app.js` calls `initCharts(listaZadan)` once, immediately after
-`listaZadan.innerHTML = sheetToHtml(tasks)` inside `renderSheet()`. Since
-every code path that shows a sheet (initial generation, "Generuj nowy
-arkusz") goes through `renderSheet()`, this single call site is sufficient.
+This is simpler than the code it replaces: no domain/range math, no
+function evaluation, no tooltip formatting — just client-to-SVG pixel
+conversion and path-string building.
+
+## Answer Reveal Integration (`js/app.js`) — small addition
+
+`setAnswersVisible(visible)` already toggles every `.odpowiedz-blok` in the
+rendered sheet. It gains one more loop, revealing/hiding each chart's
+correct curve in the same pass:
+
+```js
+for (const curve of listaZadan.querySelectorAll('.wykres .krzywa')) {
+  if (visible) curve.removeAttribute('hidden');
+  else curve.setAttribute('hidden', '');
+}
+```
+
+No new reveal mechanism, no new button — the existing "Pokaż odpowiedzi"
+toggle now also reveals the correct curve wherever one exists.
 
 ## New Templates (`js/topics/funkcje.js`)
 
-Both templates show **only** the graph — no formula appears in `tresc` — and
-use their **own dedicated ranges**, separate from the existing algebra-only
-`RANGES`/`VERTEX_RANGES`, tuned for visual legibility rather than algebraic
-difficulty:
+Both **replace** the removed `wykres_miejsce_zerowe`/`wykres_wierzcholek`
+templates and reuse the **existing** `RANGES`/`VERTEX_RANGES` (the same
+ones the plain-text `miejsceZerowe`/`wierzcholek` templates already use) —
+the dedicated `GRAPH_RANGES` from the superseded design are removed, since
+there's no longer a "keep the curve legible while hiding the formula"
+tension: the formula is shown, so the same coefficient ranges used for the
+algebra-only templates are fine here too.
 
-```js
-GRAPH_RANGES = {
-  liniowa: {
-    latwy:  { coefMax: 3, rootRange: 5, halfStep: false },
-    sredni: { coefMax: 4, rootRange: 7, halfStep: false },
-    trudny: { coefMax: 4, rootRange: 7, halfStep: true },
-  },
-  kwadratowa: {
-    latwy:  { pRange: 4, cMax: 6, aMax: 1 },
-    sredni: { pRange: 5, cMax: 8, aMax: 1 },
-    trudny: { pRange: 5, cMax: 8, aMax: 2 },
-  },
-};
-```
+- **`funkcja_liniowa_narysuj_wykres`** (`otwarte`): same `a`/`root`/`b`
+  generation as `miejsceZerowe`. `tresc` states the formula directly
+  (`"Narysuj wykres funkcji f(x) = ..."`). Domain is a fixed, generous
+  window (`xMin = -10, xMax = 10`) — the student needs room to sketch the
+  general shape, not a window targeted at a hidden feature.
+- **`funkcja_kwadratowa_narysuj_wykres`** (`otwarte`): same `a`/`p`/`b`/`c`/
+  `q` generation as `wierzcholek`. `tresc` states the formula directly.
+  Domain is centered on the vertex with a fixed margin (`p ± 6`) so the
+  parabola's shape is comfortably visible regardless of where its vertex
+  falls.
 
-**Why separate ranges:** the existing `VERTEX_RANGES` (used by the
-non-graph `wierzcholek` template) allow combinations like `a = 4, p = 10`,
-which would make a parabola drawn across a ~10-unit domain nearly vertical
-and unreadable. Graph-reading tasks need coefficients chosen for *visual*
-clarity, not just algebraic variety. These specific numbers are provisional
-and are part of the difficulty items flagged for the later recalibration
-pass.
+Both keep a textual `odpowiedz` (the zero, or the vertex coordinates) as a
+supplementary numeric cross-check alongside the visually revealed curve —
+consistent with every template needing a stated `odpowiedz`, and it costs
+nothing to give both forms of the answer.
 
-- **`funkcja_liniowa_wykres_miejsce_zerowe`** (`otwarte`): picks a root
-  (integer at `latwy`/`sredni`; may be a half-integer at `trudny`, landing
-  between grid lines — a genuine "harder to read precisely" difficulty axis,
-  not just bigger numbers), derives `a`, `b` to hit it exactly, sets
-  `xMin`/`xMax` with margin around the root. `tresc` is a fixed prompt
-  ("Na wykresie przedstawiono funkcję liniową. Odczytaj z wykresu miejsce
-  zerowe tej funkcji.") with no interpolated numbers.
-- **`funkcja_kwadratowa_wykres_wierzcholek`** (`otwarte`): picks a vertex
-  `(p, q)` (always integer coordinates in v1), derives `a`, `b`, `c` to hit
-  it exactly (same derivation already proven in the existing `wierzcholek`
-  template), sets `xMin`/`xMax` with margin around `p`. `tresc` is a fixed
-  prompt with no interpolated numbers.
+## CSS (`css/styles.css`) — changes
 
-## CSS (`css/styles.css`)
-
-Small additions only:
-
-- A `.wykres-kontener` wrapper (border consistent with `.zadanie`, spacing
-  above/below) holding the chart SVG within `taskToHtml`'s output, inserted
-  between the question text and the options/answer block.
-- No print-specific rules are needed: the interactive marker/tooltip are
-  hidden by default (only shown on pointer interaction) and pointer events
-  don't fire during printing, so the printed sheet naturally shows a clean
-  static graph with no extra work.
+- **Removed:** `.wykres .znacznik`, `.wykres .etykieta-znacznika`, and the
+  `.wykres .znacznik[hidden], .wykres .etykieta-znacznika[hidden]` rule —
+  all dead once the marker/tooltip elements are gone.
+- **Added:** `.wykres .krzywa[hidden] { display: none; }` — the same
+  explicit-rule pattern (the browser's built-in `[hidden]` UA rule does not
+  apply inside the SVG namespace, confirmed during the original
+  implementation), now needed for the curve instead of the marker.
+- **Added:** `.wykres .rysunek-ucznia { stroke: <a contrasting color, e.g.
+  a red/orange>; stroke-width: 2; }` — visually distinct from `.krzywa`'s
+  blue so the overlay comparison is easy to read.
+- `.wykres-kontener`, `.wykres`, `.siatka`, `.os`, `.etykieta`, `.nakladka`,
+  and the print rule hiding `.nakladka` are all unchanged.
 
 ## Testing Plan
 
-- **`test/chart.test.js`** (new): unit tests for `chartSvg()` —
-  - returns a string containing `<svg`, `<path`, and the expected `data-*`
-    attributes matching the input exactly;
-  - for a handful of chosen `wykres` inputs, parses the sampled points back
-    out of the rendered `<path>`'s `d` attribute and independently verifies
-    `y ≈ f(x)` at those points using the module's own stated `a`/`b`/`c` —
-    the same "recompute independently, don't trust internal state" rule
-    every other test in this project already follows;
-  - verifies the "nice grid step" picked for a few different y-range spans
-    is one of `{1, 2, 5} × 10^k`.
-- **`test/topics/funkcje.test.js`** (extended): for the two new templates —
-  - assert `task.wykres` is present with the correct shape, and that
-    substituting `wykres.a/b/(c)` reproduces the stated answer (root sits on
-    the line; vertex is the true extremum of the parabola — reusing the same
-    extremum check already written for the existing `wierzcholek` test, just
-    driven from `wykres` fields instead of parsed `tresc` text);
-  - assert `tresc` for these two templates is always the fixed prompt string
-    with no embedded numbers (the graph-only design constraint).
-- **`chartInteraction.js`**: no automated test (no DOM environment in this
-  project, same as `app.js`). Verified manually via the browser automation
-  tool — hover trace with the mouse, then a touch/pointer-drag simulation —
-  before this feature is considered done.
+- **`test/chart.test.js`**: existing grid/axis/curve-sampling tests are
+  unaffected (that logic didn't change). Remove any assertions about the
+  marker/tooltip elements (none currently exist as dedicated tests, since
+  those were only exercised via `chartInteraction.js`, which had no
+  automated tests). Add: the curve `<path class="krzywa">` carries `hidden`
+  by default; a `<path class="rysunek-ucznia">` exists with an empty `d`.
+- **`test/topics/funkcje.test.js`**: replace the two removed templates'
+  tests with new ones for the draw-the-function templates — since the
+  formula is now in `tresc` (not hidden), these can reuse the exact same
+  parsing style as the existing `miejsceZerowe`/`wierzcholek` tests
+  (extract `a`/`b`/`c` from the rendered text and independently verify the
+  stated root/vertex), *plus* assert `task.wykres`'s `a`/`b`/`c` match what
+  `tresc` states, and that the root/vertex falls inside `[xMin, xMax]`.
+- **`chartInteraction.js`**: still no automated test (DOM-only, no test
+  environment). Verified manually: draw with a simulated mouse drag and a
+  simulated touch drag, confirm multiple strokes accumulate, confirm
+  drawing is clamped to the plot area, confirm "Pokaż odpowiedzi" reveals
+  the correct curve overlaid in a distinct color, confirm print shows a
+  blank grid unrevealed / the correct curve revealed.
 
 ## Known Follow-ups (explicitly out of scope here)
 
 - General difficulty recalibration against real podstawa programowa /
-  matura reference material (applies to this feature's `GRAPH_RANGES` too).
-- Touch support is included from the start via Pointer Events, but no
-  dedicated mobile-layout testing (chart sizing on small screens) is planned
-  for this pass beyond the existing responsive CSS.
-- **Keyboard accessibility gap.** The interactive trace is pointer-only
-  (mouse hover / touch drag); there is no keyboard-driven way to move the
-  marker along the curve. This is a real regression against the app's
-  existing standard — every other control was verified fully keyboard-
-  operable when Task 16 shipped. It's called out here rather than silently
-  shipped: the two graph-reading templates remain solvable without the
-  interaction (a student can still look at the printed/static curve and
-  answer), so nothing becomes *impossible*, but the exploratory aid itself
-  is mouse/touch-only in this pass. A follow-up could add arrow-key
-  stepping of the marker when the chart SVG (or its overlay) has focus.
+  matura reference material — still open, applies project-wide.
+- No undo/clear-drawing control (see Non-Goals).
+- Keyboard accessibility: freehand drawing is inherently a pointer/touch
+  interaction with no natural keyboard equivalent. Unlike the superseded
+  hover-read design, this is not flagged as a regression against a
+  previously-working keyboard path, since the task remains fully answerable
+  without any interaction at all (read the formula, sketch on paper or
+  mentally, reveal to compare) — the drawing tool is a convenience, not a
+  requirement to complete the task.

@@ -4,6 +4,10 @@
 //   łatwy   - współczynniki do 6, pierwiastki całkowite z zakresu -5..5
 //   średni  - współczynniki do 10, pierwiastki całkowite z zakresu -9..9
 //   trudny  - współczynniki do 15, a może być różne od 1
+//
+// wierzcholek wymaga połączenia dwóch wzorów (p = -b/(2a), q = f(p)), co
+// jest osobnym, trudniejszym krokiem w stosunku do samej delty czy miejsc
+// zerowych.
 
 import { formatNumber } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -12,6 +16,12 @@ const RANGES = {
   latwy: { coefMax: 6, rootRange: 5, leadingOne: true },
   sredni: { coefMax: 10, rootRange: 9, leadingOne: true },
   trudny: { coefMax: 15, rootRange: 9, leadingOne: false },
+};
+
+const VERTEX_RANGES = {
+  latwy: { pRange: 5, cMax: 10, leadingOne: true, aMax: 1 },
+  sredni: { pRange: 8, cMax: 20, leadingOne: true, aMax: 1 },
+  trudny: { pRange: 10, cMax: 30, leadingOne: false, aMax: 4 },
 };
 
 function signed(value, suffix) {
@@ -96,8 +106,32 @@ function pierwiastki(difficulty, rng) {
   };
 }
 
+function wierzcholek(difficulty, rng) {
+  const { pRange, cMax, leadingOne, aMax } = VERTEX_RANGES[difficulty];
+  const a = (leadingOne ? 1 : rng.int(1, aMax)) * (rng.bool() ? 1 : -1);
+  const p = rng.int(-pRange, pRange);
+  const b = -2 * a * p;
+  const c = rng.int(-cMax, cMax);
+  const q = a * p * p + b * p + c;
+
+  return {
+    id: 'funkcja_kwadratowa_wierzcholek',
+    type: 'otwarte',
+    tresc:
+      `Dana jest funkcja f(x) = ${a === 1 ? '' : a === -1 ? '-' : a}x² ${signed(b, 'x')} ${signed(c, '')}. ` +
+      `Wyznacz współrzędne wierzchołka paraboli będącej wykresem tej funkcji.`,
+    odpowiedz: `(${formatNumber(p)}, ${formatNumber(q)})`,
+    rozwiazanie:
+      `Współrzędne wierzchołka wyznaczamy ze wzorów p = -b/(2a) oraz q = f(p).\n` +
+      `p = -(${b}) : (2 · ${a}) = ${p}.\n` +
+      `q = ${a} · ${p}² + (${b}) · ${p} + (${c}) = ${a * p * p} + ${b * p} + ${c} = ${q}.\n` +
+      `Wierzchołek: W = (${p}, ${q}).`,
+  };
+}
+
 export const templates = [
   { id: 'funkcja_liniowa_miejsce_zerowe', generate: miejsceZerowe },
   { id: 'funkcja_kwadratowa_delta', generate: delta },
   { id: 'funkcja_kwadratowa_pierwiastki', generate: pierwiastki },
+  { id: 'funkcja_kwadratowa_wierzcholek', generate: wierzcholek },
 ];

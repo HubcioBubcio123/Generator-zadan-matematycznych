@@ -63,6 +63,7 @@ function hideMarker(svg) {
 export function initCharts(container) {
   for (const svg of container.querySelectorAll('svg.wykres')) {
     const overlay = svg.querySelector('.nakladka');
+    if (!overlay) continue;
     let dragging = false;
 
     const handleMove = (event) => {
@@ -90,6 +91,11 @@ export function initCharts(container) {
 
     overlay.addEventListener('pointerleave', () => {
       if (!dragging) hideMarker(svg);
+    });
+
+    overlay.addEventListener('pointercancel', () => {
+      dragging = false;
+      hideMarker(svg);
     });
   }
 }

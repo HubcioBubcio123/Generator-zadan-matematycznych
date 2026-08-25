@@ -1,9 +1,9 @@
-// Ulamki zwykle (klasy 4-5).
+// Ułamki zwykłe (klasy 4-5).
 //
-// Poziomy trudnosci:
-//   latwy   - mianowniki do 8, ten sam mianownik przy dodawaniu
-//   sredni  - mianowniki do 12, rozne mianowniki
-//   trudny  - mianowniki do 20, rozne mianowniki, wynik moze byc liczba mieszana
+// Poziomy trudności:
+//   łatwy   - mianowniki do 8, ten sam mianownik przy dodawaniu
+//   średni  - mianowniki do 12, różne mianowniki
+//   trudny  - mianowniki do 20, różne mianowniki, wynik może być liczbą mieszaną
 
 import { formatFraction, formatMixed } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -36,7 +36,7 @@ function dodawanie(difficulty, rng) {
   const den = a.den * b.den;
   const correct = formatMixed(num, den);
 
-  // Typowy blad: dodanie licznikow i mianownikow osobno.
+  // Typowy błąd: dodanie liczników i mianowników osobno.
   const wrong = [
     formatMixed(a.num + b.num, a.den + b.den),
     formatMixed(num + 1, den),
@@ -54,7 +54,7 @@ function dodawanie(difficulty, rng) {
     poprawna,
     odpowiedz: correct,
     rozwiazanie:
-      `Sprowadzamy ulamki do wspolnego mianownika ${den}.\n` +
+      `Sprowadzamy ułamki do wspólnego mianownika ${den}.\n` +
       `${a.num}/${a.den} = ${a.num * b.den}/${den}, ${b.num}/${b.den} = ${b.num * a.den}/${den}.\n` +
       `Dodajemy liczniki: ${a.num * b.den} + ${b.num * a.den} = ${num}, czyli ${num}/${den}.\n` +
       `Skracamy przez ${divisor}: wynik to ${correct}.`,
@@ -75,9 +75,9 @@ function mnozenie(difficulty, rng) {
     tresc: `Oblicz: ${formatFraction(a.num, a.den)} · ${formatFraction(b.num, b.den)}`,
     odpowiedz: correct,
     rozwiazanie:
-      `Mnozymy licznik przez licznik i mianownik przez mianownik.\n` +
+      `Mnożymy licznik przez licznik i mianownik przez mianownik.\n` +
       `${a.num} · ${b.num} = ${num}, ${a.den} · ${b.den} = ${den}.\n` +
-      `Po skroceniu otrzymujemy ${correct}.`,
+      `Po skróceniu otrzymujemy ${correct}.`,
   };
 }
 
@@ -93,13 +93,13 @@ function porownanie(difficulty, rng) {
     id: 'ulamki_porownanie',
     type: 'otwarte',
     tresc:
-      `Wstaw znak <, > lub = miedzy ulamki: ` +
+      `Wstaw znak <, > lub = między ułamki: ` +
       `${formatFraction(a.num, a.den)} ... ${formatFraction(b.num, b.den)}`,
     odpowiedz: correct,
     rozwiazanie:
-      `Sprowadzamy do wspolnego mianownika ${a.den * b.den}.\n` +
+      `Sprowadzamy do wspólnego mianownika ${a.den * b.den}.\n` +
       `${a.num}/${a.den} = ${left}/${a.den * b.den}, ${b.num}/${b.den} = ${right}/${a.den * b.den}.\n` +
-      `Poniewaz ${left} ${correct} ${right}, wstawiamy znak ${correct}.`,
+      `Ponieważ ${left} ${correct} ${right}, wstawiamy znak ${correct}.`,
   };
 }
 

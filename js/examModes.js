@@ -6,7 +6,7 @@ import { getTemplatesForGrade } from './topicRegistry.js';
 export const EXAM_MODES = [
   {
     key: 'osmoklasisty',
-    label: 'Egzamin osmoklasisty',
+    label: 'Egzamin ósmoklasisty',
     gradeKeys: ['sp4', 'sp5', 'sp6', 'sp7', 'sp8'],
     closedRatio: 0.6,
   },

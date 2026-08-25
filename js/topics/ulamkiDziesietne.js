@@ -1,9 +1,9 @@
-// Ulamki dziesietne (klasy 5-6).
+// Ułamki dziesiętne (klasy 5-6).
 //
-// Poziomy trudnosci:
-//   latwy   - jedno miejsce po przecinku, wartosci do 20
-//   sredni  - dwa miejsca po przecinku, wartosci do 100
-//   trudny  - trzy miejsca po przecinku, wartosci do 100, trzy skladniki
+// Poziomy trudności:
+//   łatwy   - jedno miejsce po przecinku, wartości do 20
+//   średni  - dwa miejsca po przecinku, wartości do 100
+//   trudny  - trzy miejsca po przecinku, wartości do 100, trzy składniki
 
 import { formatNumber } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -25,7 +25,7 @@ function dodawanie(difficulty, rng) {
   const sum = Number(numbers.reduce((a, b) => a + b, 0).toFixed(places));
   const correct = formatNumber(sum);
 
-  // Typowy blad: zle wyrownany przecinek, zgubione przeniesienie.
+  // Typowy błąd: źle wyrównany przecinek, zgubione przeniesienie.
   const wrong = [
     formatNumber(Number((sum * 10).toFixed(places))),
     formatNumber(Number((sum + 0.1).toFixed(places))),
@@ -42,7 +42,7 @@ function dodawanie(difficulty, rng) {
     poprawna,
     odpowiedz: correct,
     rozwiazanie:
-      `Wyrownujemy liczby wedlug przecinka i dodajemy kolumnami.\n` +
+      `Wyrównujemy liczby według przecinka i dodajemy kolumnami.\n` +
       `${numbers.map(formatNumber).join(' + ')} = ${correct}.`,
   };
 }
@@ -59,7 +59,7 @@ function mnozenie(difficulty, rng) {
     tresc: `Oblicz: ${formatNumber(a)} · ${b}`,
     odpowiedz: formatNumber(product),
     rozwiazanie:
-      `Mnozymy tak jak liczby naturalne, a nastepnie oddzielamy ${places} ` +
+      `Mnożymy tak jak liczby naturalne, a następnie oddzielamy ${places} ` +
       `miejsc po przecinku.\n` +
       `${formatNumber(a)} · ${b} = ${formatNumber(product)}.`,
   };

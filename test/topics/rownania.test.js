@@ -30,7 +30,7 @@ test('rownania liniowe: substituting the answer satisfies the equation', () => {
   for (const difficulty of LEVELS) {
     for (let seed = 0; seed < 300; seed++) {
       const task = template.generate(difficulty, createRng(seed));
-      const equation = task.tresc.replace('Rozwiaz rownanie: ', '');
+      const equation = task.tresc.replace('Rozwiąż równanie: ', '');
       const [lhs, rhs] = equation.split('=');
       const x = parsePl(task.odpowiedz);
       const evaluate = (side) =>
@@ -57,7 +57,7 @@ test('uproszczenie: the simplified expression matches at sample x values', () =>
   for (const difficulty of LEVELS) {
     for (let seed = 0; seed < 200; seed++) {
       const task = template.generate(difficulty, createRng(seed));
-      const original = task.tresc.replace('Uprosc wyrazenie: ', '');
+      const original = task.tresc.replace('Uprość wyrażenie: ', '');
       for (const x of [-3, 0, 2, 7.5]) {
         const a = Function('x', `return ${toJs(original)};`)(x);
         const b = Function('x', `return ${toJs(task.odpowiedz)};`)(x);

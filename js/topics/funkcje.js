@@ -1,9 +1,9 @@
 // Funkcja liniowa i kwadratowa (liceum/technikum 1-2).
 //
-// Poziomy trudnosci:
-//   latwy   - wspolczynniki do 6, pierwiastki calkowite z zakresu -5..5
-//   sredni  - wspolczynniki do 10, pierwiastki calkowite z zakresu -9..9
-//   trudny  - wspolczynniki do 15, a moze byc rozne od 1
+// Poziomy trudności:
+//   łatwy   - współczynniki do 6, pierwiastki całkowite z zakresu -5..5
+//   średni  - współczynniki do 10, pierwiastki całkowite z zakresu -9..9
+//   trudny  - współczynniki do 15, a może być różne od 1
 
 import { formatNumber } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -26,7 +26,7 @@ function miejsceZerowe(difficulty, rng) {
   const b = -a * root; // guarantees f(root) === 0
 
   const correct = `x = ${formatNumber(root)}`;
-  // Typowe bledy: zapomniany znak minus, podstawienie b zamiast -b/a.
+  // Typowe błędy: zapomniany znak minus, podstawienie b zamiast -b/a.
   const wrong = [
     `x = ${formatNumber(-root)}`,
     `x = ${formatNumber(b)}`,
@@ -42,7 +42,7 @@ function miejsceZerowe(difficulty, rng) {
     poprawna,
     odpowiedz: correct,
     rozwiazanie:
-      `Miejsce zerowe to rozwiazanie rownania f(x) = 0.\n` +
+      `Miejsce zerowe to rozwiązanie równania f(x) = 0.\n` +
       `${a}x ${signed(b, '')} = 0, zatem ${a}x = ${formatNumber(-b)}.\n` +
       `x = ${formatNumber(-b)} : ${a} = ${formatNumber(root)}.`,
   };
@@ -60,7 +60,7 @@ function delta(difficulty, rng) {
     type: 'otwarte',
     tresc:
       `Dana jest funkcja f(x) = ${a === 1 ? '' : a}x² ${signed(b, 'x')} ` +
-      `${signed(c, '')}. Oblicz wyroznik (delte) tej funkcji.`,
+      `${signed(c, '')}. Oblicz wyróżnik (deltę) tej funkcji.`,
     odpowiedz: formatNumber(value),
     rozwiazanie:
       `Korzystamy ze wzoru Δ = b² - 4ac.\n` +

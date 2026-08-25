@@ -1,10 +1,10 @@
-// Ciagi, trygonometria, geometria analityczna i prawdopodobienstwo
+// Ciągi, trygonometria, geometria analityczna i prawdopodobieństwo
 // (liceum/technikum 2-4).
 //
-// Poziomy trudnosci:
-//   latwy   - male wartosci, n do 10, wspolrzedne do 6
-//   sredni  - n do 25, wspolrzedne do 12
-//   trudny  - n do 60, wspolrzedne do 20, wieksze skalowania trojkatow
+// Poziomy trudności:
+//   łatwy   - małe wartości, n do 10, współrzędne do 6
+//   średni  - n do 25, współrzędne do 12
+//   trudny  - n do 60, współrzędne do 20, większe skalowania trójkątów
 
 import { formatNumber, formatFraction } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -30,7 +30,7 @@ function ciagArytmetyczny(difficulty, rng) {
   const value = a1 + (n - 1) * r;
   const correct = formatNumber(value);
 
-  // Typowy blad: uzycie n zamiast n-1 we wzorze.
+  // Typowy błąd: użycie n zamiast n-1 we wzorze.
   const wrong = [
     formatNumber(a1 + n * r),
     formatNumber(a1 + (n - 2) * r),
@@ -42,8 +42,8 @@ function ciagArytmetyczny(difficulty, rng) {
     id: 'ciag_arytmetyczny_wyraz',
     type: 'zamkniete',
     tresc:
-      `W ciagu arytmetycznym pierwszy wyraz wynosi ${a1}, ` +
-      `a roznica wynosi ${r}. Oblicz wyraz o numerze ${n}.`,
+      `W ciągu arytmetycznym pierwszy wyraz wynosi ${a1}, ` +
+      `a różnica wynosi ${r}. Oblicz wyraz o numerze ${n}.`,
     odpowiedzi,
     poprawna,
     odpowiedz: correct,
@@ -65,13 +65,13 @@ function trygonometria(difficulty, rng) {
     id: 'trygonometria_trojkat_prostokatny',
     type: 'otwarte',
     tresc:
-      `W trojkacie prostokatnym przyprostokatna lezaca naprzeciw kata ostrego ` +
-      `α ma dlugosc ${opposite} cm, a przeciwprostokatna ma dlugosc ` +
+      `W trójkącie prostokątnym przyprostokątna leżąca naprzeciw kąta ostrego ` +
+      `α ma długość ${opposite} cm, a przeciwprostokątna ma długość ` +
       `${hypotenuse} cm. Oblicz sin α.`,
     odpowiedz: formatNumber(Number(sine.toFixed(4))),
     rozwiazanie:
-      `Sinus kata ostrego to stosunek przyprostokatnej lezacej naprzeciw tego ` +
-      `kata do przeciwprostokatnej.\n` +
+      `Sinus kąta ostrego to stosunek przyprostokątnej leżącej naprzeciw tego ` +
+      `kąta do przeciwprostokątnej.\n` +
       `sin α = ${opposite} : ${hypotenuse} = ` +
       `${formatNumber(Number(sine.toFixed(4)))}.`,
   };
@@ -92,8 +92,8 @@ function odleglosc(difficulty, rng) {
     id: 'geometria_analityczna_odleglosc',
     type: 'otwarte',
     tresc:
-      `Dane sa punkty A = (${x1}, ${y1}) oraz B = (${x2}, ${y2}). ` +
-      `Oblicz odleglosc miedzy tymi punktami.`,
+      `Dane są punkty A = (${x1}, ${y1}) oraz B = (${x2}, ${y2}). ` +
+      `Oblicz odległość między tymi punktami.`,
     odpowiedz: formatNumber(distance),
     rozwiazanie:
       `Korzystamy ze wzoru |AB| = pierwiastek z ((x₂ - x₁)² + (y₂ - y₁)²).\n` +
@@ -106,7 +106,7 @@ function odleglosc(difficulty, rng) {
 function prawdopodobienstwo(difficulty, rng) {
   const events = [
     { opis: 'wypadnie liczba parzysta', favourable: 3 },
-    { opis: 'wypadnie liczba wieksza od 4', favourable: 2 },
+    { opis: 'wypadnie liczba większa od 4', favourable: 2 },
     { opis: 'wypadnie liczba pierwsza', favourable: 3 },
     { opis: 'wypadnie liczba podzielna przez 3', favourable: 2 },
     { opis: 'wypadnie liczba mniejsza od 6', favourable: 5 },
@@ -118,12 +118,12 @@ function prawdopodobienstwo(difficulty, rng) {
     id: 'prawdopodobienstwo_kostka',
     type: 'otwarte',
     tresc:
-      `Rzucamy jeden raz szescienna kostka do gry. ` +
-      `Oblicz prawdopodobienstwo zdarzenia: ${event.opis}.`,
+      `Rzucamy jeden raz sześcienną kostką do gry. ` +
+      `Oblicz prawdopodobieństwo zdarzenia: ${event.opis}.`,
     odpowiedz: correct,
     rozwiazanie:
-      `Wszystkich mozliwych wynikow jest 6.\n` +
-      `Zdarzeniu sprzyja ${event.favourable} wynikow.\n` +
+      `Wszystkich możliwych wyników jest 6.\n` +
+      `Zdarzeniu sprzyja ${event.favourable} wyników.\n` +
       `P = ${event.favourable}/6 = ${correct}.`,
   };
 }

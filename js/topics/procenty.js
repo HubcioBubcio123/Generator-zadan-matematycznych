@@ -1,8 +1,8 @@
 // Procenty (klasy 6-7).
 //
-// Poziomy trudnosci:
-//   latwy   - procenty wielokrotnosci 10, podstawa do 200
-//   sredni  - procenty wielokrotnosci 5, podstawa do 1000
+// Poziomy trudności:
+//   łatwy   - procenty wielokrotności 10, podstawa do 200
+//   średni  - procenty wielokrotności 5, podstawa do 1000
 //   trudny  - dowolne procenty 1-99, podstawa do 5000
 
 import { formatNumber } from '../format.js';
@@ -27,7 +27,7 @@ function procentZLiczby(difficulty, rng) {
   const result = Number(((percent / 100) * base).toFixed(4));
   const correct = formatNumber(result);
 
-  // Typowe bledy: przesuniety przecinek, procent potraktowany jako ulamek dziesietny.
+  // Typowe błędy: przesunięty przecinek, procent potraktowany jako ułamek dziesiętny.
   const wrong = [
     formatNumber(Number((result * 10).toFixed(4))),
     formatNumber(Number((result / 10).toFixed(4))),
@@ -59,15 +59,15 @@ function podwyzka(difficulty, rng) {
     id: 'procenty_podwyzka',
     type: 'otwarte',
     tresc:
-      `Cena towaru wynosila ${formatNumber(base)} zl i wzrosla o ${percent}%. ` +
+      `Cena towaru wynosiła ${formatNumber(base)} zł i wzrosła o ${percent}%. ` +
       `Ile wynosi nowa cena?`,
-    odpowiedz: `${formatNumber(result)} zl`,
+    odpowiedz: `${formatNumber(result)} zł`,
     rozwiazanie:
-      `Podwyzka wynosi ${percent}% z ${formatNumber(base)} zl, ` +
-      `czyli ${formatNumber(Number(((percent / 100) * base).toFixed(4)))} zl.\n` +
+      `Podwyżka wynosi ${percent}% z ${formatNumber(base)} zł, ` +
+      `czyli ${formatNumber(Number(((percent / 100) * base).toFixed(4)))} zł.\n` +
       `Nowa cena: ${formatNumber(base)} + ` +
       `${formatNumber(Number(((percent / 100) * base).toFixed(4)))} = ` +
-      `${formatNumber(result)} zl.`,
+      `${formatNumber(result)} zł.`,
   };
 }
 

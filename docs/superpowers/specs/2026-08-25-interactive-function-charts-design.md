@@ -199,6 +199,13 @@ nothing to give both forms of the answer.
 - General difficulty recalibration against real podstawa programowa /
   matura reference material — still open, applies project-wide.
 - No undo/clear-drawing control (see Non-Goals).
+- **Touch scroll is blocked over charts.** `.wykres` needs `touch-action:
+  none` so freehand drawing can capture movement in every direction — but
+  since charts are near-full-width on a phone, a finger landing on one
+  won't scroll the page past it, which is a real usability cost found
+  during the final review. A proper fix (e.g. a per-chart "tryb rysowania"
+  toggle that only claims touch gestures while active) is a real feature
+  addition, not a quick patch, and is deferred rather than solved here.
 - Keyboard accessibility: freehand drawing is inherently a pointer/touch
   interaction with no natural keyboard equivalent. Unlike the superseded
   hover-read design, this is not flagged as a regression against a

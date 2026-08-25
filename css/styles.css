@@ -193,7 +193,7 @@ button:hover {
   width: 100%;
   max-width: 20rem;
   height: auto;
-  touch-action: pan-y;
+  touch-action: none;
 }
 
 .wykres .siatka {
@@ -216,22 +216,16 @@ button:hover {
   fill: #555555;
 }
 
-.wykres .znacznik {
-  fill: var(--akcent);
-}
-
-.wykres .etykieta-znacznika {
-  font-size: 10px;
-  font-weight: 600;
-  fill: #16294a;
-}
-
 /* The browser's built-in [hidden] { display: none } rule does not apply
-   within the SVG namespace, so the marker and its tooltip need their own
-   explicit hidden-state rule. */
-.wykres .znacznik[hidden],
-.wykres .etykieta-znacznika[hidden] {
+   within the SVG namespace, so the curve needs its own explicit
+   hidden-state rule to actually disappear before it's revealed. */
+.wykres .krzywa[hidden] {
   display: none;
+}
+
+.wykres .rysunek-ucznia {
+  stroke: #c0392b;
+  stroke-width: 2;
 }
 
 @media print {

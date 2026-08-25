@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Generator zadań z matematyki</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="naglowek">
+      <h1>Generator zadań z matematyki</h1>
+    </header>
+
+    <main>
+      <section id="ekran-menu">
+        <form id="formularz" novalidate>
+          <fieldset>
+            <legend>Tryb</legend>
+            <label>
+              <input type="radio" name="tryb" id="tryb-cwiczenia" value="cwiczenia" checked />
+              Ćwiczenia
+            </label>
+            <label>
+              <input type="radio" name="tryb" id="tryb-egzamin" value="egzamin" />
+              Egzamin
+            </label>
+          </fieldset>
+
+          <fieldset id="grupa-cwiczenia">
+            <legend>Zakres materiału</legend>
+            <p class="pole">
+              <label for="wybor-etapu">Etap</label>
+              <select id="wybor-etapu">
+                <option value="podstawowa">Szkoła podstawowa</option>
+                <option value="ponadpodstawowa">Liceum / technikum</option>
+              </select>
+            </p>
+            <p class="pole">
+              <label for="wybor-klasy">Klasa</label>
+              <select id="wybor-klasy"></select>
+            </p>
+            <p class="pole">
+              <label for="wybor-dzialu">Dział</label>
+              <select id="wybor-dzialu"></select>
+            </p>
+          </fieldset>
+
+          <fieldset id="grupa-egzamin" hidden>
+            <legend>Rodzaj egzaminu</legend>
+            <p class="pole">
+              <label for="wybor-egzaminu">Egzamin</label>
+              <select id="wybor-egzaminu"></select>
+            </p>
+          </fieldset>
+
+          <fieldset id="trudnosc">
+            <legend>Trudność</legend>
+            <label><input type="radio" name="trudnosc" value="latwy" /> Łatwy</label>
+            <label><input type="radio" name="trudnosc" value="sredni" checked /> Średni</label>
+            <label><input type="radio" name="trudnosc" value="trudny" /> Trudny</label>
+          </fieldset>
+
+          <p class="pole">
+            <label for="liczba-zadan">Liczba zadań (1–12)</label>
+            <input type="number" id="liczba-zadan" min="1" max="12" step="1" value="6" />
+          </p>
+
+          <p id="komunikat-bledu" class="komunikat" role="alert" hidden></p>
+
+          <p><button type="submit" id="generuj">Generuj zadania</button></p>
+        </form>
+      </section>
+
+      <section id="ekran-arkusz" hidden>
+        <div class="pasek">
+          <p id="naglowek-arkusza"></p>
+          <button type="button" id="powrot">← Wróć do menu</button>
+        </div>
+
+        <ol id="lista-zadan"></ol>
+
+        <div class="pasek pasek-akcji">
+          <button type="button" id="pokaz-odpowiedzi">Pokaż odpowiedzi</button>
+          <button type="button" id="nowy-arkusz">Generuj nowy arkusz</button>
+          <button type="button" id="drukuj">Drukuj</button>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

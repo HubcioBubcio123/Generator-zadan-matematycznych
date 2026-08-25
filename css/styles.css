@@ -181,12 +181,61 @@ button:hover {
   }
 }
 
+.wykres-kontener {
+  margin: 0.75rem 0;
+  padding: 0.5rem;
+  border: 1px solid var(--ramka);
+  background: var(--tlo);
+}
+
+.wykres {
+  display: block;
+  width: 100%;
+  max-width: 20rem;
+  height: auto;
+  touch-action: none;
+}
+
+.wykres .siatka {
+  stroke: #dddddd;
+  stroke-width: 1;
+}
+
+.wykres .os {
+  stroke: #333333;
+  stroke-width: 1.5;
+}
+
+.wykres .krzywa {
+  stroke: var(--akcent);
+  stroke-width: 2;
+}
+
+.wykres .etykieta {
+  font-size: 9px;
+  fill: #555555;
+}
+
+.wykres .znacznik {
+  fill: var(--akcent);
+}
+
+.wykres .etykieta-znacznika {
+  font-size: 10px;
+  font-weight: 600;
+  fill: #16294a;
+}
+
 @media print {
   .naglowek,
   .pasek,
   button,
   #ekran-menu {
     display: none !important;
+  }
+
+  .wykres .nakladka {
+    display: none;
   }
 
   body {

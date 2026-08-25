@@ -112,39 +112,61 @@ test('pierwiastki tasks always have a positive discriminant', () => {
   }
 });
 
-test('wykres miejsce zerowe: a*root + b equals zero, root is inside the drawn domain, and tresc reveals no numbers', () => {
-  const template = templates.find((t) => t.id === 'funkcja_liniowa_wykres_miejsce_zerowe');
+test('narysuj wykres liniowy: wykres describes the same function as tresc, and the zero lies inside the drawn domain', () => {
+  const template = templates.find((t) => t.id === 'funkcja_liniowa_narysuj_wykres');
   for (const difficulty of LEVELS) {
     for (let seed = 0; seed < 200; seed++) {
       const task = template.generate(difficulty, createRng(seed));
-      const root = parsePl(task.odpowiedz);
+      const body = task.tresc.match(/f\(x\) = ([^.]+)\./)[1];
+      const js = body.replace(/,/g, '.').replace(/(\d)x/g, '$1*x');
+      const fFromTresc = (x) => Function('x', `return ${js};`)(x);
       const { rownanie, a, b, xMin, xMax } = task.wykres;
+      const fFromWykres = (x) => a * x + b;
       assert.equal(rownanie, 'liniowa');
-      assert.ok(Math.abs(a * root + b) < 1e-9, `a*root+b != 0 for root=${root}`);
+      for (const x of [-3, 0, 2, 7.5]) {
+        assert.ok(
+          Math.abs(fFromTresc(x) - fFromWykres(x)) < 1e-6,
+          `tresc and wykres disagree at x=${x}: ${fFromTresc(x)} vs ${fFromWykres(x)}`
+        );
+      }
+      const root = -b / a;
+      assert.ok(Math.abs(fFromWykres(root)) < 1e-9, `f(${root}) != 0`);
       assert.ok(xMin < root && root < xMax, `root ${root} not inside domain [${xMin}, ${xMax}]`);
-      assert.ok(!/\d/.test(task.tresc), `tresc leaks a number: ${task.tresc}`);
+      assert.match(task.tresc, /^Narysuj wykres funkcji f\(x\)/);
     }
   }
 });
 
-test('wykres wierzcholek: q equals f(p), p is genuinely the extremum, vertex is inside the drawn domain, and tresc reveals no numbers', () => {
-  const template = templates.find((t) => t.id === 'funkcja_kwadratowa_wykres_wierzcholek');
+test('narysuj wykres kwadratowy: wykres describes the same function as tresc, and the vertex lies inside the drawn domain', () => {
+  const template = templates.find((t) => t.id === 'funkcja_kwadratowa_narysuj_wykres');
   for (const difficulty of LEVELS) {
     for (let seed = 0; seed < 200; seed++) {
       const task = template.generate(difficulty, createRng(seed));
-      const { a, b, c, xMin, xMax } = task.wykres;
-      const f = (x) => a * x * x + b * x + c;
-      const [pText, qText] = task.odpowiedz.replace(/[()]/g, '').split(',').map((s) => s.trim());
-      const p = parsePl(pText);
-      const q = parsePl(qText);
-      assert.ok(Math.abs(f(p) - q) < 1e-9, `f(${p}) != ${q}`);
-      const left = f(p - 1);
-      const right = f(p + 1);
-      const isMin = left >= q - 1e-9 && right >= q - 1e-9;
-      const isMax = left <= q + 1e-9 && right <= q + 1e-9;
-      assert.ok(isMin || isMax, `p=${p} is not an extremum`);
+      const body = task.tresc.match(/f\(x\) = ([^.]+)\./)[1];
+      const js = body
+        .replace(/,/g, '.')
+        .replace(/x²/g, '(x*x)')
+        .replace(/(\d)\(x\*x\)/g, '$1*(x*x)')
+        .replace(/(\d)x/g, '$1*x');
+      const fFromTresc = (x) => Function('x', `return ${js};`)(x);
+      const { rownanie, a, b, c, xMin, xMax } = task.wykres;
+      const fFromWykres = (x) => a * x * x + b * x + c;
+      assert.equal(rownanie, 'kwadratowa');
+      for (const x of [-3, 0, 2, 7.5]) {
+        assert.ok(
+          Math.abs(fFromTresc(x) - fFromWykres(x)) < 1e-6,
+          `tresc and wykres disagree at x=${x}: ${fFromTresc(x)} vs ${fFromWykres(x)}`
+        );
+      }
+      const p = -b / (2 * a);
+      const q = fFromWykres(p);
+      const left = fFromWykres(p - 1);
+      const right = fFromWykres(p + 1);
+      const isMin = left >= q - 1e-6 && right >= q - 1e-6;
+      const isMax = left <= q + 1e-6 && right <= q + 1e-6;
+      assert.ok(isMin || isMax, `p=${p} is not an extremum for ${body}`);
       assert.ok(xMin < p && p < xMax, `vertex x=${p} not inside domain [${xMin}, ${xMax}]`);
-      assert.ok(!/\d/.test(task.tresc), `tresc leaks a number: ${task.tresc}`);
+      assert.match(task.tresc, /^Narysuj wykres funkcji f\(x\)/);
     }
   }
 });

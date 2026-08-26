@@ -133,8 +133,35 @@ test('difficulty scales the operand magnitude', () => {
   assert.ok(maxFor('sredni') < maxFor('trudny'), 'sredni is not easier than trudny');
 });
 
+function gcdIndependent(a, b) {
+  a = Math.abs(a);
+  b = Math.abs(b);
+  while (b) [a, b] = [b, a % b];
+  return a;
+}
+
+function lcmIndependent(a, b) {
+  return (a * b) / gcdIndependent(a, b);
+}
+
+test('nwd_nww: the stated NWD and NWW are independently correct', () => {
+  const template = templates.find((t) => t.id === 'liczby_naturalne_nwd_nww');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const numbers = task.tresc.match(/\d+/g).map(Number);
+      const [x, y, p, q] = numbers;
+      const m = task.odpowiedz.match(/^NWD = (\d+), NWW = (\d+)$/);
+      assert.ok(m, `unexpected answer format: "${task.odpowiedz}"`);
+      assert.equal(Number(m[1]), gcdIndependent(x, y), task.tresc);
+      assert.equal(Number(m[2]), lcmIndependent(p, q), task.tresc);
+    }
+  }
+});
+
 test('results are never negative for this klasa-4 topic', () => {
   for (const template of templates) {
+    if (template.id === 'liczby_naturalne_nwd_nww') continue; // compound answer, not a bare number
     for (const difficulty of LEVELS) {
       for (let seed = 0; seed < 100; seed++) {
         const task = template.generate(difficulty, createRng(seed));

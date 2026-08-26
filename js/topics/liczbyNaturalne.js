@@ -41,6 +41,75 @@ const RANGES = {
   },
 };
 
+function gcd(a, b) {
+  a = Math.abs(a);
+  b = Math.abs(b);
+  while (b) [a, b] = [b, a % b];
+  return a;
+}
+
+function lcm(a, b) {
+  return (a * b) / gcd(a, b);
+}
+
+const NWD_NWW_RANGES = {
+  latwy: { gMax: 6, mMax: 6, pqMax: 8 },
+  sredni: { gMax: 9, mMax: 8, pqMax: 10 },
+  trudny: { gMax: 12, mMax: 10, pqMax: 12 },
+};
+
+function coprimePair(rng, max) {
+  let m1, m2;
+  do {
+    m1 = rng.int(2, max);
+    m2 = rng.int(2, max);
+  } while (gcd(m1, m2) !== 1 || m1 === m2);
+  return [m1, m2];
+}
+
+function nwdNww(difficulty, rng) {
+  const { gMax, mMax, pqMax } = NWD_NWW_RANGES[difficulty];
+  const g = rng.int(2, gMax);
+  const [m1, m2] = coprimePair(rng, mMax);
+  const x = g * m1;
+  const y = g * m2;
+
+  let p, q;
+  do {
+    p = rng.int(2, pqMax);
+    q = rng.int(2, pqMax);
+  } while (p === q);
+  const w = lcm(p, q);
+
+  const correct = `NWD = ${g}, NWW = ${w}`;
+
+  // Typowe błędy: zamiana miejscami NWD i NWW, pominięcie dzielenia przez
+  // NWD przy liczeniu NWW, użycie mnożnika zamiast NWD.
+  const wrong = [
+    `NWD = ${w}, NWW = ${g}`,
+    `NWD = ${g}, NWW = ${p * q}`,
+    `NWD = ${m1}, NWW = ${w}`,
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'liczby_naturalne_nwd_nww',
+    type: 'zamkniete',
+    tresc:
+      `Liczba A to największy wspólny dzielnik liczb ${x} i ${y}, ` +
+      `a liczba B to najmniejsza wspólna wielokrotność liczb ${p} i ${q}. ` +
+      `Wybierz właściwą odpowiedź spośród podanych.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `NWD(${x}, ${y}) = ${g} (największa liczba, przez którą dzielą się obie liczby).\n` +
+      `NWW(${p}, ${q}) = (${p} · ${q}) : NWD(${p}, ${q}) = ${p * q} : ${gcd(p, q)} = ${w}.\n` +
+      `${correct}.`,
+  };
+}
+
 // Builds a chain like "120 + 45 - 30" where the running total never dips
 // below zero, so klasa-4 students never have to reason about negatives.
 function buildChain(rng, max, count, minusCount) {
@@ -139,4 +208,5 @@ export const templates = [
   { id: 'liczby_naturalne_dodawanie', generate: dodawanie },
   { id: 'liczby_naturalne_mnozenie', generate: mnozenie },
   { id: 'liczby_naturalne_dzielenie', generate: dzielenie },
+  { id: 'liczby_naturalne_nwd_nww', generate: nwdNww },
 ];

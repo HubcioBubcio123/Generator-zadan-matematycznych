@@ -8,6 +8,13 @@
 // wierzcholek wymaga połączenia dwóch wzorów (p = -b/(2a), q = f(p)), co
 // jest osobnym, trudniejszym krokiem w stosunku do samej delty czy miejsc
 // zerowych.
+//
+// narysuj_wykres templates show the formula directly (unlike the other
+// templates in this file, which is the point — the student sketches the
+// graph themselves, then reveals the correct curve to compare) and reuse
+// the same RANGES/VERTEX_RANGES as the algebra-only templates below,
+// since there's no "keep the curve legible while hiding the formula"
+// tension once the formula is shown.
 
 import { formatNumber } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -129,9 +136,55 @@ function wierzcholek(difficulty, rng) {
   };
 }
 
+function narysujWykresLiniowy(difficulty, rng) {
+  const { coefMax } = RANGES[difficulty];
+  const a = rng.int(1, coefMax) * (rng.bool() ? 1 : -1);
+  const root = rng.int(-9, 9);
+  const b = -a * root;
+
+  return {
+    id: 'funkcja_liniowa_narysuj_wykres',
+    type: 'otwarte',
+    tresc: `Narysuj wykres funkcji f(x) = ${a}x ${signed(b, '')}.`,
+    wykres: { rownanie: 'liniowa', a, b, xMin: -10, xMax: 10 },
+    odpowiedz: `Miejsce zerowe: x = ${formatNumber(root)}`,
+    rozwiazanie:
+      `Wykresem funkcji liniowej jest linia prosta - wystarczą dwa punkty.\n` +
+      `Dla x = 0: f(0) = ${formatNumber(b)}.\n` +
+      `Miejsce zerowe: f(x) = 0 dla x = ${formatNumber(root)}.\n` +
+      `Poprawny wykres pokazany jest na rysunku po odsłonięciu odpowiedzi.`,
+  };
+}
+
+function narysujWykresKwadratowy(difficulty, rng) {
+  const { pRange, cMax, leadingOne, aMax } = VERTEX_RANGES[difficulty];
+  const a = (leadingOne ? 1 : rng.int(1, aMax)) * (rng.bool() ? 1 : -1);
+  const p = rng.int(-pRange, pRange);
+  const b = -2 * a * p;
+  const c = rng.int(-cMax, cMax);
+  const q = a * p * p + b * p + c;
+  const margin = 6;
+
+  return {
+    id: 'funkcja_kwadratowa_narysuj_wykres',
+    type: 'otwarte',
+    tresc:
+      `Narysuj wykres funkcji f(x) = ${a === 1 ? '' : a === -1 ? '-' : a}x² ` +
+      `${signed(b, 'x')} ${signed(c, '')}.`,
+    wykres: { rownanie: 'kwadratowa', a, b, c, xMin: p - margin, xMax: p + margin },
+    odpowiedz: `Wierzchołek: W = (${formatNumber(p)}, ${formatNumber(q)})`,
+    rozwiazanie:
+      `Wykresem funkcji kwadratowej jest parabola.\n` +
+      `Współrzędne wierzchołka: p = -b/(2a) = ${formatNumber(p)}, q = f(p) = ${formatNumber(q)}.\n` +
+      `Poprawny wykres pokazany jest na rysunku po odsłonięciu odpowiedzi.`,
+  };
+}
+
 export const templates = [
   { id: 'funkcja_liniowa_miejsce_zerowe', generate: miejsceZerowe },
   { id: 'funkcja_kwadratowa_delta', generate: delta },
   { id: 'funkcja_kwadratowa_pierwiastki', generate: pierwiastki },
   { id: 'funkcja_kwadratowa_wierzcholek', generate: wierzcholek },
+  { id: 'funkcja_liniowa_narysuj_wykres', generate: narysujWykresLiniowy },
+  { id: 'funkcja_kwadratowa_narysuj_wykres', generate: narysujWykresKwadratowy },
 ];

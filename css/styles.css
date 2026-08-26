@@ -137,9 +137,29 @@ button:hover {
   border: 1px solid var(--ramka);
 }
 
-.zadanie-numer {
+.zadanie-naglowek {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   margin: 0 0 0.4rem;
+}
+
+.zadanie-numer {
+  margin: 0;
   font-weight: 600;
+}
+
+.zadanie-akcje {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.zadanie-akcje button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
 }
 
 .zadanie-tresc {
@@ -181,12 +201,79 @@ button:hover {
   }
 }
 
+.wykres-kontener {
+  margin: 0.75rem 0;
+  padding: 0.5rem;
+  border: 1px solid var(--ramka);
+  background: var(--tlo);
+}
+
+.wykres-akcje {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.wykres-akcje button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.wykres {
+  display: block;
+  width: 100%;
+  max-width: 20rem;
+  height: auto;
+  touch-action: none;
+}
+
+.wykres-kontener--powiekszony .wykres {
+  max-width: 40rem;
+}
+
+.wykres .siatka {
+  stroke: #dddddd;
+  stroke-width: 1;
+}
+
+.wykres .os {
+  stroke: #333333;
+  stroke-width: 1.5;
+}
+
+.wykres .krzywa {
+  stroke: var(--akcent);
+  stroke-width: 2;
+}
+
+.wykres .etykieta {
+  font-size: 9px;
+  fill: #555555;
+}
+
+/* The browser's built-in [hidden] { display: none } rule does not apply
+   within the SVG namespace, so the curve needs its own explicit
+   hidden-state rule to actually disappear before it's revealed. */
+.wykres .krzywa[hidden] {
+  display: none;
+}
+
+.wykres .rysunek-ucznia {
+  stroke: #c0392b;
+  stroke-width: 2;
+}
+
 @media print {
   .naglowek,
   .pasek,
   button,
   #ekran-menu {
     display: none !important;
+  }
+
+  .wykres .nakladka {
+    display: none;
   }
 
   body {

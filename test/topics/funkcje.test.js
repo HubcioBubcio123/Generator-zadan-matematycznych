@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports four templates with unique ids', () => {
-  assert.equal(templates.length, 4);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
+test('exports six templates with unique ids', () => {
+  assert.equal(templates.length, 6);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 6);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -108,6 +108,65 @@ test('pierwiastki tasks always have a positive discriminant', () => {
       const task = template.generate(difficulty, createRng(seed));
       const roots = task.odpowiedz.match(/-?\d+(?:,\d+)?/g).map(parsePl);
       assert.notEqual(roots[0], roots[1], 'roots coincided; delta was zero');
+    }
+  }
+});
+
+test('narysuj wykres liniowy: wykres describes the same function as tresc, and the zero lies inside the drawn domain', () => {
+  const template = templates.find((t) => t.id === 'funkcja_liniowa_narysuj_wykres');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const body = task.tresc.match(/f\(x\) = ([^.]+)\./)[1];
+      const js = body.replace(/,/g, '.').replace(/(\d)x/g, '$1*x');
+      const fFromTresc = (x) => Function('x', `return ${js};`)(x);
+      const { rownanie, a, b, xMin, xMax } = task.wykres;
+      const fFromWykres = (x) => a * x + b;
+      assert.equal(rownanie, 'liniowa');
+      for (const x of [-3, 0, 2, 7.5]) {
+        assert.ok(
+          Math.abs(fFromTresc(x) - fFromWykres(x)) < 1e-6,
+          `tresc and wykres disagree at x=${x}: ${fFromTresc(x)} vs ${fFromWykres(x)}`
+        );
+      }
+      const root = -b / a;
+      assert.ok(Math.abs(fFromWykres(root)) < 1e-9, `f(${root}) != 0`);
+      assert.ok(xMin < root && root < xMax, `root ${root} not inside domain [${xMin}, ${xMax}]`);
+      assert.match(task.tresc, /^Narysuj wykres funkcji f\(x\)/);
+    }
+  }
+});
+
+test('narysuj wykres kwadratowy: wykres describes the same function as tresc, and the vertex lies inside the drawn domain', () => {
+  const template = templates.find((t) => t.id === 'funkcja_kwadratowa_narysuj_wykres');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const body = task.tresc.match(/f\(x\) = ([^.]+)\./)[1];
+      const js = body
+        .replace(/,/g, '.')
+        .replace(/x²/g, '(x*x)')
+        .replace(/(\d)\(x\*x\)/g, '$1*(x*x)')
+        .replace(/(\d)x/g, '$1*x');
+      const fFromTresc = (x) => Function('x', `return ${js};`)(x);
+      const { rownanie, a, b, c, xMin, xMax } = task.wykres;
+      const fFromWykres = (x) => a * x * x + b * x + c;
+      assert.equal(rownanie, 'kwadratowa');
+      for (const x of [-3, 0, 2, 7.5]) {
+        assert.ok(
+          Math.abs(fFromTresc(x) - fFromWykres(x)) < 1e-6,
+          `tresc and wykres disagree at x=${x}: ${fFromTresc(x)} vs ${fFromWykres(x)}`
+        );
+      }
+      const p = -b / (2 * a);
+      const q = fFromWykres(p);
+      const left = fFromWykres(p - 1);
+      const right = fFromWykres(p + 1);
+      const isMin = left >= q - 1e-6 && right >= q - 1e-6;
+      const isMax = left <= q + 1e-6 && right <= q + 1e-6;
+      assert.ok(isMin || isMax, `p=${p} is not an extremum for ${body}`);
+      assert.ok(xMin < p && p < xMax, `vertex x=${p} not inside domain [${xMin}, ${xMax}]`);
+      assert.match(task.tresc, /^Narysuj wykres funkcji f\(x\)/);
     }
   }
 });

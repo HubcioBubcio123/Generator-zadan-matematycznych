@@ -76,3 +76,44 @@ test('every task element contains exactly one answer block', () => {
   const html = sheetToHtml([openTask, closedTask]);
   assert.equal((html.match(/odpowiedz-blok/g) ?? []).length, 2);
 });
+
+const taskWithChart = {
+  id: 'test_chart',
+  type: 'otwarte',
+  tresc: 'Odczytaj z wykresu.',
+  wykres: { rownanie: 'liniowa', a: 1, b: -2, xMin: -5, xMax: 5 },
+  odpowiedz: 'x = 2',
+  rozwiazanie: 'Wykres przecina os OX w punkcie x = 2.',
+};
+
+test('embeds the chart svg, unescaped, when a task has a wykres field', () => {
+  const html = taskToHtml(taskWithChart, 0);
+  assert.match(html, /<div class="wykres-kontener">/);
+  assert.match(html, /<svg class="wykres"/);
+  assert.ok(!html.includes('&lt;svg'), 'svg markup was escaped');
+});
+
+test('omits the chart container when a task has no wykres field', () => {
+  const html = taskToHtml(openTask, 0);
+  assert.ok(!html.includes('wykres-kontener'));
+});
+
+test('emits reroll-numbers and reroll-type buttons carrying the task index', () => {
+  const html = taskToHtml(openTask, 4);
+  assert.match(html, /<div class="zadanie-akcje">/);
+  assert.match(
+    html,
+    /<button type="button" class="zadanie-losuj-liczby" data-index="4">Losuj nowe liczby<\/button>/
+  );
+  assert.match(
+    html,
+    /<button type="button" class="zadanie-losuj-typ" data-index="4">Losuj inny typ zadania<\/button>/
+  );
+});
+
+test('emits a clear-drawing button and an enlarge-toggle button alongside the chart', () => {
+  const html = taskToHtml(taskWithChart, 0);
+  assert.match(html, /<div class="wykres-akcje">/);
+  assert.match(html, /<button type="button" class="wykres-wyczysc">Wyczyść rysunek<\/button>/);
+  assert.match(html, /<button type="button" class="wykres-powieksz">Powiększ<\/button>/);
+});

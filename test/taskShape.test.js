@@ -80,3 +80,41 @@ test('allows a period that ends a sentence', () => {
 test('rejects an empty rozwiazanie', () => {
   assert.throws(() => assertValidTask({ ...validOpen, rozwiazanie: '' }), /rozwiazanie/);
 });
+
+const validWykres = {
+  ...validOpen,
+  wykres: { rownanie: 'liniowa', a: 2, b: -4, xMin: -5, xMax: 5 },
+};
+
+test('accepts a valid task with a wykres field', () => {
+  assert.doesNotThrow(() => assertValidTask(validWykres));
+});
+
+test('rejects an unknown rownanie in wykres', () => {
+  assert.throws(
+    () => assertValidTask({ ...validWykres, wykres: { ...validWykres.wykres, rownanie: 'szescienna' } }),
+    /rownanie/
+  );
+});
+
+test('rejects a wykres with a non-finite coefficient', () => {
+  assert.throws(
+    () => assertValidTask({ ...validWykres, wykres: { ...validWykres.wykres, a: NaN } }),
+    /wykres\.a/
+  );
+});
+
+test('rejects a wykres where xMin is not less than xMax', () => {
+  assert.throws(
+    () => assertValidTask({ ...validWykres, wykres: { ...validWykres.wykres, xMin: 5, xMax: 5 } }),
+    /xMin/
+  );
+});
+
+test('rejects a kwadratowa wykres missing c', () => {
+  const kwadratowa = { rownanie: 'kwadratowa', a: 1, b: 0, xMin: -5, xMax: 5 };
+  assert.throws(
+    () => assertValidTask({ ...validWykres, wykres: kwadratowa }),
+    /wykres\.c/
+  );
+});

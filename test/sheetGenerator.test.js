@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateSheet, clampCount } from '../js/sheetGenerator.js';
+import {
+  generateSheet,
+  clampCount,
+  rerollTaskNumbers,
+  rerollTaskType,
+} from '../js/sheetGenerator.js';
 import { assertValidTask } from '../js/taskShape.js';
 import { GRADES } from '../js/topicRegistry.js';
 
@@ -178,4 +183,53 @@ test('tasks repeat templates with different parameters when the pool is small', 
   });
   assert.equal(sheet.length, 12);
   assert.equal(new Set(sheet.map((t) => t.tresc)).size, 12);
+});
+
+const rerollOptions = {
+  mode: 'cwiczenia',
+  gradeKey: 'lo1',
+  topicKey: 'funkcje',
+  difficulty: 'sredni',
+  count: 6,
+  seed: 11,
+};
+
+test('rerollTaskNumbers keeps the same template id', () => {
+  const sheet = generateSheet(rerollOptions);
+  const rerolled = rerollTaskNumbers(rerollOptions, sheet, 0, 999);
+  assert.equal(rerolled.id, sheet[0].id);
+});
+
+test('rerollTaskNumbers produces text that collides with no task already in the sheet', () => {
+  const sheet = generateSheet(rerollOptions);
+  const rerolled = rerollTaskNumbers(rerollOptions, sheet, 0, 999);
+  const existingTexts = sheet.map((t) => t.tresc);
+  assert.ok(!existingTexts.includes(rerolled.tresc));
+});
+
+test('rerollTaskNumbers is deterministic for a given seed', () => {
+  const sheet = generateSheet(rerollOptions);
+  const a = rerollTaskNumbers(rerollOptions, sheet, 0, 42);
+  const b = rerollTaskNumbers(rerollOptions, sheet, 0, 42);
+  assert.deepEqual(a, b);
+});
+
+test('rerollTaskType picks a different template id when the topic has more than one', () => {
+  const sheet = generateSheet(rerollOptions);
+  const rerolled = rerollTaskType(rerollOptions, sheet, 0, 999);
+  assert.notEqual(rerolled.id, sheet[0].id);
+});
+
+test('rerollTaskType produces text that collides with no task already in the sheet', () => {
+  const sheet = generateSheet(rerollOptions);
+  const rerolled = rerollTaskType(rerollOptions, sheet, 0, 999);
+  const existingTexts = sheet.map((t) => t.tresc);
+  assert.ok(!existingTexts.includes(rerolled.tresc));
+});
+
+test('rerollTaskType is deterministic for a given seed', () => {
+  const sheet = generateSheet(rerollOptions);
+  const a = rerollTaskType(rerollOptions, sheet, 0, 77);
+  const b = rerollTaskType(rerollOptions, sheet, 0, 77);
+  assert.deepEqual(a, b);
 });

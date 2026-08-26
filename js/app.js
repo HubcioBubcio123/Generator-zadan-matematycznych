@@ -1,8 +1,14 @@
 import { GRADES, getTopicsForGrade } from './topicRegistry.js';
 import { EXAM_MODES } from './examModes.js';
-import { generateSheet, clampCount } from './sheetGenerator.js';
-import { sheetToHtml } from './render.js';
+import {
+  generateSheet,
+  clampCount,
+  rerollTaskNumbers,
+  rerollTaskType,
+} from './sheetGenerator.js';
+import { sheetToHtml, taskToHtml } from './render.js';
 import { loadPreferences, savePreferences } from './storage.js';
+import { initCharts } from './chartInteraction.js';
 
 const el = (id) => document.getElementById(id);
 
@@ -29,6 +35,7 @@ const ETYKIETY_TRUDNOSCI = {
 
 let ostatnieUstawienia = null;
 let odpowiedziWidoczne = false;
+let aktualneZadania = [];
 
 function selectedRadio(name) {
   return formularz.querySelector(`input[name="${name}"]:checked`)?.value;
@@ -83,11 +90,22 @@ function sheetHeading(options) {
   return `Arkusz: ${zakres} · ${ETYKIETY_TRUDNOSCI[options.difficulty]} · ${liczba}`;
 }
 
-function setAnswersVisible(visible) {
-  odpowiedziWidoczne = visible;
-  for (const block of listaZadan.querySelectorAll('.odpowiedz-blok')) {
+// Shared by the whole-sheet toggle and a single rerolled task, so a
+// freshly-swapped-in task always matches whatever the rest of the sheet is
+// currently showing.
+function applyAnswerVisibility(scope, visible) {
+  for (const block of scope.querySelectorAll('.odpowiedz-blok')) {
     block.hidden = !visible;
   }
+  for (const curve of scope.querySelectorAll('.wykres .krzywa')) {
+    if (visible) curve.removeAttribute('hidden');
+    else curve.setAttribute('hidden', '');
+  }
+}
+
+function setAnswersVisible(visible) {
+  odpowiedziWidoczne = visible;
+  applyAnswerVisibility(listaZadan, visible);
   przyciskOdpowiedzi.textContent = visible
     ? 'Ukryj odpowiedzi'
     : 'Pokaż odpowiedzi';
@@ -120,12 +138,25 @@ function renderSheet(options) {
 
   clearError();
   ostatnieUstawienia = options;
+  aktualneZadania = tasks;
   listaZadan.innerHTML = sheetToHtml(tasks);
+  initCharts(listaZadan);
   naglowekArkusza.textContent = sheetHeading({ ...options, count: tasks.length });
   setAnswersVisible(false);
   ekranMenu.hidden = true;
   ekranArkusz.hidden = false;
   ekranArkusz.scrollIntoView({ block: 'start' });
+}
+
+function rerollTaskAt(index, kind) {
+  if (!ostatnieUstawienia || !aktualneZadania[index]) return;
+  const rerollFn = kind === 'typ' ? rerollTaskType : rerollTaskNumbers;
+  const nowyZadanie = rerollFn(ostatnieUstawienia, aktualneZadania, index);
+  aktualneZadania[index] = nowyZadanie;
+  listaZadan.children[index].outerHTML = taskToHtml(nowyZadanie, index);
+  const nowyLi = listaZadan.children[index];
+  applyAnswerVisibility(nowyLi, odpowiedziWidoczne);
+  initCharts(nowyLi);
 }
 
 function restorePreferences() {
@@ -188,6 +219,17 @@ function init() {
   przyciskOdpowiedzi.addEventListener('click', () =>
     setAnswersVisible(!odpowiedziWidoczne)
   );
+
+  listaZadan.addEventListener('click', (event) => {
+    const button = event.target.closest(
+      '.zadanie-losuj-liczby, .zadanie-losuj-typ'
+    );
+    if (!button) return;
+    const kind = button.classList.contains('zadanie-losuj-typ')
+      ? 'typ'
+      : 'liczby';
+    rerollTaskAt(Number(button.dataset.index), kind);
+  });
 
   el('nowy-arkusz').addEventListener('click', () => {
     if (ostatnieUstawienia) renderSheet(ostatnieUstawienia);

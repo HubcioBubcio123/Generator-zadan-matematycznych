@@ -177,8 +177,48 @@ function rownaniaNawiasy(difficulty, rng) {
   };
 }
 
+const SREDNIA_RANGES = {
+  latwy: { meanMax: 10 },
+  sredni: { meanMax: 20 },
+  trudny: { meanMax: 30 },
+};
+
+function sredniaArytmetyczna(difficulty, rng) {
+  const { meanMax } = SREDNIA_RANGES[difficulty];
+  const X = rng.int(1, meanMax);
+  const Y = rng.int(1, meanMax);
+  const c = 3 * Y - 2 * X;
+  const correct = formatNumber(c);
+
+  // Typowe błędy: brak podwojenia X, odjęcie średnich wprost, zamiana ról X i Y.
+  const wrong = [
+    formatNumber(3 * Y - X),
+    formatNumber(Y - X),
+    formatNumber(3 * X - 2 * Y),
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'rownania_srednia_arytmetyczna',
+    type: 'zamkniete',
+    tresc:
+      `Średnia arytmetyczna dwóch liczb a i b jest równa ${X}, ` +
+      `a średnia arytmetyczna trzech liczb a, b i c jest równa ${Y}. ` +
+      `Oblicz liczbę c.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Z pierwszej średniej: a + b = 2 · ${X} = ${2 * X}.\n` +
+      `Z drugiej średniej: a + b + c = 3 · ${Y} = ${3 * Y}.\n` +
+      `c = ${3 * Y} - ${2 * X} = ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_liniowe', generate: rownaniaLiniowe },
   { id: 'rownania_uproszczenie', generate: uproszczenie },
   { id: 'rownania_nawiasy', generate: rownaniaNawiasy },
+  { id: 'rownania_srednia_arytmetyczna', generate: sredniaArytmetyczna },
 ];

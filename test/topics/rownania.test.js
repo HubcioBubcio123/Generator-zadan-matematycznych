@@ -16,9 +16,9 @@ function evaluateAt(expr, x) {
   return Function('x', `return ${toJs(expr)};`)(x);
 }
 
-test('exports three templates with unique ids', () => {
-  assert.equal(templates.length, 3);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 3);
+test('exports four templates with unique ids', () => {
+  assert.equal(templates.length, 4);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -127,6 +127,18 @@ test('nawiasy answers are stated in the form "x = ..."', () => {
     for (let seed = 0; seed < 100; seed++) {
       const task = template.generate(difficulty, createRng(seed));
       assert.match(task.odpowiedz, /^x = -?\d+(,\d+)?$/, task.odpowiedz);
+    }
+  }
+});
+
+test('srednia arytmetyczna: c equals 3Y - 2X for the stated X and Y', () => {
+  const template = templates.find((t) => t.id === 'rownania_srednia_arytmetyczna');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const [X, Y] = task.tresc.match(/równa (\d+)/g).map((m) => Number(m.replace('równa ', '')));
+      const expected = 3 * Y - 2 * X;
+      assert.equal(parsePl(task.odpowiedz), expected, `X=${X} Y=${Y} -> ${task.odpowiedz}`);
     }
   }
 });

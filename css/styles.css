@@ -137,9 +137,29 @@ button:hover {
   border: 1px solid var(--ramka);
 }
 
-.zadanie-numer {
+.zadanie-naglowek {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   margin: 0 0 0.4rem;
+}
+
+.zadanie-numer {
+  margin: 0;
   font-weight: 600;
+}
+
+.zadanie-akcje {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.zadanie-akcje button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
 }
 
 .zadanie-tresc {

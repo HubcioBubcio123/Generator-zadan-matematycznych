@@ -200,6 +200,50 @@ function trojkatRownobocznyPrawdaFalsz(difficulty, rng) {
   };
 }
 
+const CZWOROKAT_RANGES = {
+  latwy: { betaMax: 40, k: 2 },
+  sredni: { betaMax: 50, k: 2 },
+  trudny: { betaMax: 50, k: 3 },
+};
+
+function czworokatKaty(difficulty, rng) {
+  const { betaMax, k } = CZWOROKAT_RANGES[difficulty];
+  // beta*(2+k) must stay at or below 269 so diff = alpha - beta comes out
+  // strictly positive ("alpha bigger than beta" has to actually be true).
+  const betaLimit = Math.min(betaMax, Math.floor(269 / (2 + k)));
+  const beta = rng.int(10, betaLimit);
+  const gamma = k * beta;
+  const delta = 90;
+  const alpha = 360 - beta - gamma - delta;
+  const diff = alpha - beta;
+  const mnoznik = k === 2 ? 'dwukrotnie' : 'trzykrotnie';
+
+  const correct = `${alpha}°`;
+  // Typowe błędy: podanie beta lub gamma zamiast alfa, zapomnienie o kącie prostym.
+  const wrong = [`${beta}°`, `${gamma}°`, `${360 - beta - gamma}°`];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'geometria_czworokat_katy',
+    type: 'zamkniete',
+    figura: { typ: 'czworokat' },
+    tresc:
+      `Kąty wewnętrzne czworokąta ABCD oznaczono odpowiednio α, β, γ, δ. ` +
+      `Miara kąta α jest o ${diff}° większa od miary kąta β, a miara kąta γ jest ` +
+      `${mnoznik} większa od miary kąta β. Kąt δ jest kątem prostym. ` +
+      `Oblicz miarę kąta α.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Suma kątów wewnętrznych czworokąta wynosi 360°.\n` +
+      `β + γ + δ + α = 360°, gdzie γ = ${k} · β, δ = 90°, α = β + ${diff}°.\n` +
+      `β + ${k}β + 90 + β + ${diff} = 360°, więc ${2 + k}β = ${270 - diff}, β = ${beta}°.\n` +
+      `α = β + ${diff}° = ${beta}° + ${diff}° = ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'geometria_pole_prostokata', generate: poleProstokata },
   { id: 'geometria_obwod_prostokata', generate: obwodProstokata },
@@ -207,4 +251,5 @@ export const templates = [
   { id: 'geometria_pole_trapezu', generate: poleTrapezu },
   { id: 'geometria_figura_zlozona', generate: figuraZlozona },
   { id: 'geometria_trojkat_rownoboczny_prawda_falsz', generate: trojkatRownobocznyPrawdaFalsz },
+  { id: 'geometria_czworokat_katy', generate: czworokatKaty },
 ];

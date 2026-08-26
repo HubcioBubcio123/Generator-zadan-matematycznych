@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports six templates with unique ids', () => {
-  assert.equal(templates.length, 6);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 6);
+test('exports seven templates with unique ids', () => {
+  assert.equal(templates.length, 7);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 7);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -125,6 +125,25 @@ test('trojkat rownoboczny prawda/falsz: both judgments are independently correct
       const areaJudgedTrue = answerMatch[2] === 'Prawda';
       assert.equal(heightClaim === trueHeightText, heightJudgedTrue, task.tresc);
       assert.equal(areaClaim === trueAreaText, areaJudgedTrue, task.tresc);
+    }
+  }
+});
+
+test('czworokat katy: alpha satisfies the 360-degree sum and matches the stated relationships', () => {
+  const template = templates.find((t) => t.id === 'geometria_czworokat_katy');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      assert.equal(task.figura.typ, 'czworokat');
+
+      const diff = Number(task.tresc.match(/o (\d+)° większa/)[1]);
+      const mnoznik = task.tresc.includes('dwukrotnie') ? 2 : 3;
+      const alpha = Number(task.odpowiedz.replace('°', ''));
+      const beta = alpha - diff;
+      const gamma = mnoznik * beta;
+      const delta = 90;
+      assert.equal(alpha + beta + gamma + delta, 360, task.tresc);
+      assert.ok(beta > 0 && gamma > 0 && alpha > 0, `non-positive angle: ${task.tresc}`);
     }
   }
 });

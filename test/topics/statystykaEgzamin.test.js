@@ -5,9 +5,18 @@ import { assertValidTask } from '../../js/taskShape.js';
 import { createRng } from '../../js/rng.js';
 
 const LEVELS = ['latwy', 'sredni', 'trudny'];
+const SKLEPY = ['Sklep A', 'Sklep B', 'Sklep C', 'Sklep D', 'Sklep E'];
 
 function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
+}
+
+function parseSklepyTable(tresc) {
+  const match = tresc.match(
+    /Sklep A - (\d+), Sklep B - (\d+), Sklep C - (\d+), Sklep D - (\d+), Sklep E - (\d+)/
+  );
+  assert.ok(match, `unexpected table format: "${tresc}"`);
+  return match.slice(1).map(Number);
 }
 
 test('exports five templates with unique ids', () => {
@@ -38,53 +47,6 @@ test('srednia: the stated mean equals the independently recomputed sum/n', () =>
         Math.abs(parsePl(task.odpowiedz) - expected) < 1e-6,
         `${task.tresc} -> ${task.odpowiedz} (expected ${expected})`
       );
-    }
-  }
-});
-
-test('mediana: the stated median equals the independently recomputed middle of the sorted list', () => {
-  const template = templates.find((t) => t.id === 'statystyka_mediana_egz');
-  for (const difficulty of LEVELS) {
-    for (let seed = 0; seed < 200; seed++) {
-      const task = template.generate(difficulty, createRng(seed));
-      const nums = task.tresc.match(/-?\d+/g).map(Number);
-      const sorted = [...nums].sort((a, b) => a - b);
-      const expected = sorted[(sorted.length - 1) / 2];
-      assert.equal(parsePl(task.odpowiedz), expected, `${task.tresc} -> ${task.odpowiedz}`);
-    }
-  }
-});
-
-test('dominanta: the stated mode is independently the most frequent value in the list', () => {
-  const template = templates.find((t) => t.id === 'statystyka_dominanta_egz');
-  for (const difficulty of LEVELS) {
-    for (let seed = 0; seed < 200; seed++) {
-      const task = template.generate(difficulty, createRng(seed));
-      const nums = task.tresc.match(/-?\d+/g).map(Number);
-      const counts = new Map();
-      for (const n of nums) counts.set(n, (counts.get(n) ?? 0) + 1);
-      let expected = nums[0];
-      let expectedCount = 0;
-      for (const [value, count] of counts) {
-        if (count > expectedCount) {
-          expected = value;
-          expectedCount = count;
-        }
-      }
-      assert.equal(parsePl(task.odpowiedz), expected, `${task.tresc} -> ${task.odpowiedz}`);
-      assert.ok(expectedCount > 1, `no repeated value found in ${task.tresc}`);
-    }
-  }
-});
-
-test('rozstep: the stated range equals the independently recomputed max minus min', () => {
-  const template = templates.find((t) => t.id === 'statystyka_rozstep_egz');
-  for (const difficulty of LEVELS) {
-    for (let seed = 0; seed < 200; seed++) {
-      const task = template.generate(difficulty, createRng(seed));
-      const nums = task.tresc.match(/-?\d+/g).map(Number);
-      const expected = Math.max(...nums) - Math.min(...nums);
-      assert.equal(parsePl(task.odpowiedz), expected, `${task.tresc} -> ${task.odpowiedz}`);
     }
   }
 });
@@ -135,6 +97,51 @@ test('procent z tabeli: the stated percent equals the independently recomputed c
       const expectedPercent = Math.round((counts[askIndex] / total) * 100);
       const statedPercent = Number(task.odpowiedz.replace('%', ''));
       assert.equal(statedPercent, expectedPercent, `${task.tresc} -> ${task.odpowiedz}`);
+    }
+  }
+});
+
+test('tabela porownanie: the stated difference equals the independently recomputed larger-minus-smaller value', () => {
+  const template = templates.find((t) => t.id === 'statystyka_tabela_porownanie_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const wartosci = parseSklepyTable(task.tresc);
+      const question = task.tresc.match(/Ile więcej rowerów sprzedał (Sklep [A-E]) niż (Sklep [A-E])\?/);
+      assert.ok(question, `unexpected question format: "${task.tresc}"`);
+      const [, labelA, labelB] = question;
+      const iA = SKLEPY.indexOf(labelA);
+      const iB = SKLEPY.indexOf(labelB);
+      const expected = wartosci[iA] - wartosci[iB];
+      assert.ok(expected > 0, `A should be strictly larger than B in "${task.tresc}"`);
+      assert.equal(parsePl(task.odpowiedz), expected, `${task.tresc} -> ${task.odpowiedz}`);
+    }
+  }
+});
+
+test('tabela suma: the stated total equals the independently recomputed sum of the table', () => {
+  const template = templates.find((t) => t.id === 'statystyka_tabela_suma_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const wartosci = parseSklepyTable(task.tresc);
+      const expected = wartosci.reduce((a, b) => a + b, 0);
+      assert.equal(parsePl(task.odpowiedz), expected, `${task.tresc} -> ${task.odpowiedz}`);
+    }
+  }
+});
+
+test('tabela ekstremum: the stated shop independently has the strictly largest value in the table', () => {
+  const template = templates.find((t) => t.id === 'statystyka_tabela_ekstremum_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const wartosci = parseSklepyTable(task.tresc);
+      const maxValue = Math.max(...wartosci);
+      const maxCount = wartosci.filter((v) => v === maxValue).length;
+      assert.equal(maxCount, 1, `ambiguous tie for maximum in "${task.tresc}"`);
+      const expectedIndex = wartosci.indexOf(maxValue);
+      assert.equal(task.odpowiedz, SKLEPY[expectedIndex], `${task.tresc} -> ${task.odpowiedz}`);
     }
   }
 });

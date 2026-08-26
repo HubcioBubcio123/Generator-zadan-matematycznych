@@ -4,10 +4,18 @@
 // Klasa 8 statystyka unit will get its own, entirely separate templates —
 // never these ones — per the project's per-grade exclusivity rule.
 //
+// Scope is deliberately limited to what CKE's own podstawa programowa
+// (Dział XIII, "Odczytywanie danych i elementy statystyki opisowej",
+// klasy VII-VIII) actually requires: interpreting data from tables and
+// charts, and computing the arithmetic mean. Mediana, dominanta, and
+// rozstęp are NOT part of szkoła podstawowa's curriculum — they belong to
+// szkoła ponadpodstawowa (liceum) probability/statistics — so this file
+// intentionally does not cover them.
+//
 // Poziomy trudności:
-//   łatwy   - mniejsze zbiory liczb, mniejsze wartości
+//   łatwy   - mniejsze wartości w tabelach/zbiorach liczb
 //   średni  - większe wartości
-//   trudny  - większe zbiory (7 elementów), większe wartości
+//   trudny  - jeszcze większe wartości / większe zbiory
 
 import { formatNumber } from '../format.js';
 import { buildOptions } from '../distractors.js';
@@ -60,94 +68,6 @@ function srednia(difficulty, rng) {
     rozwiazanie:
       `Średnia arytmetyczna to suma liczb podzielona przez ich ilość.\n` +
       `(${values.join(' + ')}) : ${n} = ${total} : ${n} = ${correct}.`,
-  };
-}
-
-const MEDIANA_RANGES = {
-  latwy: { n: 5, max: 50 },
-  sredni: { n: 5, max: 100 },
-  trudny: { n: 7, max: 150 },
-};
-
-function mediana(difficulty, rng) {
-  const { n, max } = MEDIANA_RANGES[difficulty];
-  const values = Array.from({ length: n }, () => rng.int(1, max));
-  const sorted = [...values].sort((a, b) => a - b);
-  const median = sorted[(n - 1) / 2];
-
-  return {
-    id: 'statystyka_mediana_egz',
-    type: 'otwarte',
-    tresc: `Oblicz medianę liczb: ${values.join(', ')}.`,
-    odpowiedz: formatNumber(median),
-    rozwiazanie:
-      `Porządkujemy liczby rosnąco: ${sorted.join(', ')}.\n` +
-      `Mediana to liczba znajdująca się na środkowej pozycji: ${formatNumber(median)}.`,
-  };
-}
-
-const DOMINANTA_RANGES = {
-  latwy: { max: 20 },
-  sredni: { max: 40 },
-  trudny: { max: 60 },
-};
-
-function dominanta(difficulty, rng) {
-  const { max } = DOMINANTA_RANGES[difficulty];
-  const mode = rng.int(1, max);
-  const others = [];
-  while (others.length < 4) {
-    const candidate = rng.int(1, max);
-    if (candidate !== mode && !others.includes(candidate)) others.push(candidate);
-  }
-  const all = [mode, mode, mode, ...others];
-  const values = rng.shuffle(all);
-  const correct = formatNumber(mode);
-
-  // Typowe błędy: podanie innej liczby ze zbioru, podanie średniej zamiast
-  // wartości najczęściej występującej.
-  const wrong = [
-    formatNumber(others[0]),
-    formatNumber(others[1]),
-    formatNumber(Math.round(all.reduce((a, b) => a + b, 0) / all.length)),
-  ];
-
-  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
-
-  return {
-    id: 'statystyka_dominanta_egz',
-    type: 'zamkniete',
-    tresc: `Oblicz dominantę (wartość najczęściej występującą) w zbiorze liczb: ${values.join(', ')}.`,
-    odpowiedzi,
-    poprawna,
-    odpowiedz: correct,
-    rozwiazanie:
-      `Dominanta to wartość, która występuje najczęściej.\n` +
-      `Liczba ${correct} występuje 3 razy, pozostałe liczby występują tylko raz, więc dominanta = ${correct}.`,
-  };
-}
-
-const ROZSTEP_RANGES = {
-  latwy: { n: 5, max: 50 },
-  sredni: { n: 6, max: 100 },
-  trudny: { n: 7, max: 150 },
-};
-
-function rozstep(difficulty, rng) {
-  const { n, max } = ROZSTEP_RANGES[difficulty];
-  const values = Array.from({ length: n }, () => rng.int(1, max));
-  const najwieksza = Math.max(...values);
-  const najmniejsza = Math.min(...values);
-  const rozstepWartosc = najwieksza - najmniejsza;
-
-  return {
-    id: 'statystyka_rozstep_egz',
-    type: 'otwarte',
-    tresc: `Oblicz rozstęp zbioru liczb: ${values.join(', ')}.`,
-    odpowiedz: formatNumber(rozstepWartosc),
-    rozwiazanie:
-      `Rozstęp to różnica między największą a najmniejszą wartością w zbiorze.\n` +
-      `${najwieksza} - ${najmniejsza} = ${formatNumber(rozstepWartosc)}.`,
   };
 }
 
@@ -220,10 +140,107 @@ function procentZTabeli(difficulty, rng) {
   };
 }
 
+const SKLEP_RANGES = {
+  latwy: { max: 30 },
+  sredni: { max: 60 },
+  trudny: { max: 100 },
+};
+
+// All three table templates below use the same "Sklep A/B/C/D/E sold N
+// bikes" framing so every label stays in subject position (mianownik) in
+// every sentence, deliberately avoiding Polish's day-of-week-style
+// locative declension traps (e.g. "w środę", not "w środa").
+const SKLEPY = ['Sklep A', 'Sklep B', 'Sklep C', 'Sklep D', 'Sklep E'];
+
+function tabelaPorownanie(difficulty, rng) {
+  const { max } = SKLEP_RANGES[difficulty];
+  const wartosci = SKLEPY.map(() => rng.int(5, max));
+  let iA;
+  let iB;
+  do {
+    iA = rng.int(0, SKLEPY.length - 1);
+    iB = rng.int(0, SKLEPY.length - 1);
+  } while (iA === iB || wartosci[iA] === wartosci[iB]); // "ile więcej" needs a genuine, nonzero difference
+  if (wartosci[iA] < wartosci[iB]) [iA, iB] = [iB, iA]; // iA is now the larger value
+  const roznica = wartosci[iA] - wartosci[iB];
+  const correct = formatNumber(roznica);
+  const tabela = SKLEPY.map((label, i) => `${label} - ${wartosci[i]}`).join(', ');
+
+  // Typowe błędy: podanie jednej z wartości zamiast różnicy, dodanie zamiast odjęcia.
+  const wrong = [
+    formatNumber(wartosci[iA]),
+    formatNumber(wartosci[iB]),
+    formatNumber(wartosci[iA] + wartosci[iB]),
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'statystyka_tabela_porownanie_egz',
+    type: 'zamkniete',
+    tresc:
+      `W tabeli przedstawiono liczbę sprzedanych rowerów w kolejnych sklepach: ${tabela}. ` +
+      `Ile więcej rowerów sprzedał ${SKLEPY[iA]} niż ${SKLEPY[iB]}?`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Odczytujemy z tabeli: ${SKLEPY[iA]} - ${wartosci[iA]}, ${SKLEPY[iB]} - ${wartosci[iB]}.\n` +
+      `Różnica: ${wartosci[iA]} - ${wartosci[iB]} = ${correct}.`,
+  };
+}
+
+function tabelaSuma(difficulty, rng) {
+  const { max } = SKLEP_RANGES[difficulty];
+  const wartosci = SKLEPY.map(() => rng.int(5, max));
+  const suma = wartosci.reduce((a, b) => a + b, 0);
+  const tabela = SKLEPY.map((label, i) => `${label} - ${wartosci[i]}`).join(', ');
+
+  return {
+    id: 'statystyka_tabela_suma_egz',
+    type: 'otwarte',
+    tresc:
+      `W tabeli przedstawiono liczbę sprzedanych rowerów w kolejnych sklepach: ${tabela}. ` +
+      `Oblicz łączną liczbę sprzedanych rowerów.`,
+    odpowiedz: formatNumber(suma),
+    rozwiazanie: `Łączna liczba: ${wartosci.join(' + ')} = ${suma}.`,
+  };
+}
+
+function tabelaEkstremum(difficulty, rng) {
+  const { max } = SKLEP_RANGES[difficulty];
+  let wartosci;
+  let liczbaMaksimow;
+  do {
+    wartosci = SKLEPY.map(() => rng.int(5, max));
+    const najwieksza = Math.max(...wartosci);
+    liczbaMaksimow = wartosci.filter((v) => v === najwieksza).length;
+  } while (liczbaMaksimow > 1); // avoid an ambiguous tie for first place
+  const maxIndex = wartosci.indexOf(Math.max(...wartosci));
+  const correct = SKLEPY[maxIndex];
+  const tabela = SKLEPY.map((label, i) => `${label} - ${wartosci[i]}`).join(', ');
+
+  const wrong = SKLEPY.filter((_, i) => i !== maxIndex).slice(0, 3);
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'statystyka_tabela_ekstremum_egz',
+    type: 'zamkniete',
+    tresc:
+      `W tabeli przedstawiono liczbę sprzedanych rowerów w kolejnych sklepach: ${tabela}. ` +
+      `Który sklep sprzedał najwięcej rowerów?`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie: `Największa wartość w tabeli to ${wartosci[maxIndex]}, co odpowiada: ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'statystyka_srednia_egz', generate: srednia },
-  { id: 'statystyka_mediana_egz', generate: mediana },
-  { id: 'statystyka_dominanta_egz', generate: dominanta },
-  { id: 'statystyka_rozstep_egz', generate: rozstep },
   { id: 'statystyka_procent_z_tabeli_egz', generate: procentZTabeli },
+  { id: 'statystyka_tabela_porownanie_egz', generate: tabelaPorownanie },
+  { id: 'statystyka_tabela_suma_egz', generate: tabelaSuma },
+  { id: 'statystyka_tabela_ekstremum_egz', generate: tabelaEkstremum },
 ];

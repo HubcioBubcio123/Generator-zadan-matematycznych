@@ -16,9 +16,9 @@ function evaluateAt(expr, x) {
   return Function('x', `return ${toJs(expr)};`)(x);
 }
 
-test('exports four templates with unique ids', () => {
-  assert.equal(templates.length, 4);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
+test('exports five templates with unique ids', () => {
+  assert.equal(templates.length, 5);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 5);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -139,6 +139,29 @@ test('srednia arytmetyczna: c equals 3Y - 2X for the stated X and Y', () => {
       const [X, Y] = task.tresc.match(/równa (\d+)/g).map((m) => Number(m.replace('równa ', '')));
       const expected = 3 * Y - 2 * X;
       assert.equal(parsePl(task.odpowiedz), expected, `X=${X} Y=${Y} -> ${task.odpowiedz}`);
+    }
+  }
+});
+
+function parsePlComma(text) {
+  return Number(text.replace(',', '.'));
+}
+
+test('podzial na grupy: the total splits exactly into the stated ratio/difference relationship', () => {
+  const template = templates.find((t) => t.id === 'rownania_podzial_na_grupy');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const total = Number(task.tresc.match(/łącznie (\d+)/)[1]);
+      const k = parsePlComma(task.tresc.match(/(\d+(?:,\d+)?) razy więcej/)[1]);
+      const d = Number(task.tresc.match(/o (\d+) mniej/)[1]);
+      // total = cat1 + k*cat1 + (cat1 - d)  =>  cat1 = (total + d) / (2 + k)
+      const cat1 = (total + d) / (2 + k);
+      const expectedCat2 = k * cat1;
+      assert.ok(
+        Math.abs(parsePl(task.odpowiedz) - expectedCat2) < 1e-6,
+        `${task.tresc} -> ${task.odpowiedz} (expected ${expectedCat2})`
+      );
     }
   }
 });

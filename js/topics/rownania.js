@@ -216,9 +216,49 @@ function sredniaArytmetyczna(difficulty, rng) {
   };
 }
 
+const PODZIAL_RANGES = {
+  latwy: { baseMax: 20, dMax: 5, ratios: [2, 3] },
+  sredni: { baseMax: 30, dMax: 10, ratios: [2, 3, 1.5] },
+  trudny: { baseMax: 40, dMax: 15, ratios: [1.5, 2, 2.5, 3] },
+};
+
+function podzialNaGrupy(difficulty, rng) {
+  const { baseMax, dMax, ratios } = PODZIAL_RANGES[difficulty];
+  const k = rng.pick(ratios);
+  // Keep k * base an integer even when k is fractional (e.g. 1.5, 2.5) by
+  // always picking an even base.
+  const base = Number.isInteger(k)
+    ? rng.int(5, baseMax)
+    : rng.int(3, Math.floor(baseMax / 2)) * 2;
+  const d = rng.int(1, Math.min(dMax, base - 1));
+
+  const cat1 = base;
+  const cat2 = k * base;
+  const cat3 = base - d;
+  const total = cat1 + cat2 + cat3;
+  const kLabel = formatNumber(k);
+
+  return {
+    id: 'rownania_podzial_na_grupy',
+    type: 'otwarte',
+    tresc:
+      `W pudełku jest łącznie ${formatNumber(total)} kulek w trzech kolorach: ` +
+      `czerwone, niebieskie i zielone. Kulek niebieskich jest ${kLabel} razy ` +
+      `więcej niż czerwonych, a kulek zielonych jest o ${d} mniej niż czerwonych. ` +
+      `Oblicz, ile jest kulek niebieskich.`,
+    odpowiedz: formatNumber(cat2),
+    rozwiazanie:
+      `Niech liczba kulek czerwonych będzie równa x. Wtedy niebieskich jest ${kLabel}x, ` +
+      `a zielonych x - ${d}.\n` +
+      `x + ${kLabel}x + (x - ${d}) = ${formatNumber(total)}.\n` +
+      `x = ${cat1}, więc kulek niebieskich jest ${kLabel} · ${cat1} = ${formatNumber(cat2)}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_liniowe', generate: rownaniaLiniowe },
   { id: 'rownania_uproszczenie', generate: uproszczenie },
   { id: 'rownania_nawiasy', generate: rownaniaNawiasy },
   { id: 'rownania_srednia_arytmetyczna', generate: sredniaArytmetyczna },
+  { id: 'rownania_podzial_na_grupy', generate: podzialNaGrupy },
 ];

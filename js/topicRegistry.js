@@ -13,6 +13,7 @@ import { templates as funkcje } from './topics/funkcje.js';
 import { templates as liceumZaawansowane } from './topics/liceumZaawansowane.js';
 import { templates as bryly } from './topics/bryly.js';
 import { templates as statystykaEgzamin } from './topics/statystykaEgzamin.js';
+import { templates as procentyEgzamin } from './topics/procentyEgzamin.js';
 
 export const TOPICS = [
   { key: 'liczby_naturalne', label: 'Działania na liczbach naturalnych', templates: liczbyNaturalne },
@@ -29,6 +30,8 @@ export const TOPICS = [
   // Exam-exclusive: deliberately not listed under any grade's topicKeys
   // below, so it never appears in Ćwiczenia mode's Dział dropdown.
   { key: 'statystyka_osmoklasisty', label: 'Statystyka (egzamin ósmoklasisty)', templates: statystykaEgzamin },
+  // Exam-exclusive: deliberately not listed under any grade's topicKeys.
+  { key: 'procenty_osmoklasisty', label: 'Procenty (egzamin ósmoklasisty)', templates: procentyEgzamin },
 ];
 
 export const GRADES = [

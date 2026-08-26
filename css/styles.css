@@ -68,6 +68,13 @@ fieldset label {
   min-width: 9rem;
 }
 
+/* .pole's own display:flex would otherwise override the browser's default
+   [hidden] { display: none }, since author CSS always beats the
+   user-agent default regardless of selector specificity. */
+.pole[hidden] {
+  display: none;
+}
+
 select,
 input[type="number"] {
   padding: 0.35rem 0.5rem;

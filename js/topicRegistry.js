@@ -2,6 +2,7 @@
 // adding one entry to TOPICS and listing its key under the relevant grades.
 
 import { templates as liczbyNaturalne } from './topics/liczbyNaturalne.js';
+import { templates as liczbyNaturalnePowtorka } from './topics/liczbyNaturalnePowtorka.js';
 import { templates as ulamki } from './topics/ulamki.js';
 import { templates as ulamkiDziesietne } from './topics/ulamkiDziesietne.js';
 import { templates as procenty } from './topics/procenty.js';
@@ -24,6 +25,7 @@ export const TOPICS = [
   { key: 'funkcje', label: 'Funkcja liniowa i kwadratowa', templates: funkcje },
   { key: 'liceum_zaawansowane', label: 'Ciągi, trygonometria, geometria analityczna, prawdopodobieństwo', templates: liceumZaawansowane },
   { key: 'bryly', label: 'Bryły: pole powierzchni i objętość', templates: bryly },
+  { key: 'liczby_naturalne_powtorka', label: 'Liczby naturalne — powtórka (NWD, NWW, wzory)', templates: liczbyNaturalnePowtorka },
   // Exam-exclusive: deliberately not listed under any grade's topicKeys
   // below, so it never appears in Ćwiczenia mode's Dział dropdown.
   { key: 'statystyka_osmoklasisty', label: 'Statystyka (egzamin ósmoklasisty)', templates: statystykaEgzamin },
@@ -34,7 +36,7 @@ export const GRADES = [
   { key: 'sp5', label: 'Klasa 5', etap: 'podstawowa', topicKeys: ['ulamki', 'ulamki_dziesietne', 'geometria_plaska', 'liczby_naturalne'] },
   { key: 'sp6', label: 'Klasa 6', etap: 'podstawowa', topicKeys: ['ulamki_dziesietne', 'procenty', 'geometria_plaska', 'ulamki', 'bryly'] },
   { key: 'sp7', label: 'Klasa 7', etap: 'podstawowa', topicKeys: ['procenty', 'potegi_pitagoras', 'rownania', 'ulamki_dziesietne'] },
-  { key: 'sp8', label: 'Klasa 8', etap: 'podstawowa', topicKeys: ['potegi_pitagoras', 'rownania', 'procenty', 'geometria_plaska', 'liczby_naturalne', 'bryly'] },
+  { key: 'sp8', label: 'Klasa 8', etap: 'podstawowa', topicKeys: ['potegi_pitagoras', 'rownania', 'procenty', 'geometria_plaska', 'liczby_naturalne_powtorka', 'bryly'] },
   { key: 'lo1', label: 'Klasa 1 (liceum/technikum)', etap: 'ponadpodstawowa', topicKeys: ['rownania', 'funkcje', 'potegi_pitagoras', 'procenty'] },
   { key: 'lo2', label: 'Klasa 2 (liceum/technikum)', etap: 'ponadpodstawowa', topicKeys: ['funkcje', 'liceum_zaawansowane', 'rownania'] },
   { key: 'lo3', label: 'Klasa 3 (liceum/technikum)', etap: 'ponadpodstawowa', topicKeys: ['liceum_zaawansowane', 'funkcje', 'potegi_pitagoras'] },

@@ -158,10 +158,53 @@ function figuraZlozona(difficulty, rng) {
   };
 }
 
+const TROJKAT_RB_RANGES = {
+  latwy: { kMax: 5 },
+  sredni: { kMax: 8 },
+  trudny: { kMax: 12 },
+};
+
+function trojkatRownobocznyPrawdaFalsz(difficulty, rng) {
+  const { kMax } = TROJKAT_RB_RANGES[difficulty];
+  const k = rng.int(1, kMax);
+  const s = 2 * k;
+
+  const trueHeightText = k === 1 ? '√3 cm' : `${k}√3 cm`;
+  const trueAreaText = `${k * k}√3 cm²`;
+  const wrongHeightText = `${s}√3 cm`; // pominięte dzielenie przez 2
+  const wrongAreaText = `${2 * k * k}√3 cm²`; // pominięte dzielenie przez 2
+
+  const claim1True = rng.bool();
+  const claim2True = rng.bool();
+  const claimHeightText = claim1True ? trueHeightText : wrongHeightText;
+  const claimAreaText = claim2True ? trueAreaText : wrongAreaText;
+
+  return {
+    id: 'geometria_trojkat_rownoboczny_prawda_falsz',
+    type: 'otwarte',
+    figura: { typ: 'trojkat', bok: s },
+    tresc:
+      `Dany jest trójkąt równoboczny o boku długości ${s} cm.\n` +
+      `1. Wysokość tego trójkąta jest równa ${claimHeightText}.\n` +
+      `2. Pole tego trójkąta jest równe ${claimAreaText}.\n` +
+      `Oceń prawdziwość obu zdań.`,
+    odpowiedz: `1. ${claim1True ? 'Prawda' : 'Fałsz'}, 2. ${claim2True ? 'Prawda' : 'Fałsz'}`,
+    rozwiazanie:
+      `Wysokość trójkąta równobocznego dzieli go na dwa trójkąty prostokątne ` +
+      `o przeciwprostokątnej ${s} cm i jednej przyprostokątnej ${k} cm.\n` +
+      `Z twierdzenia Pitagorasa: h² = ${s}² - ${k}² = ${s * s} - ${k * k} = ${s * s - k * k}, ` +
+      `więc h = ${trueHeightText}.\n` +
+      `Pole: P = (${s} · ${trueHeightText}) : 2 = ${trueAreaText}.\n` +
+      `Zdanie 1 jest ${claim1True ? 'prawdziwe' : 'fałszywe'}, ` +
+      `zdanie 2 jest ${claim2True ? 'prawdziwe' : 'fałszywe'}.`,
+  };
+}
+
 export const templates = [
   { id: 'geometria_pole_prostokata', generate: poleProstokata },
   { id: 'geometria_obwod_prostokata', generate: obwodProstokata },
   { id: 'geometria_pole_trojkata', generate: poleTrojkata },
   { id: 'geometria_pole_trapezu', generate: poleTrapezu },
   { id: 'geometria_figura_zlozona', generate: figuraZlozona },
+  { id: 'geometria_trojkat_rownoboczny_prawda_falsz', generate: trojkatRownobocznyPrawdaFalsz },
 ];

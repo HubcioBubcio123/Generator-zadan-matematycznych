@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports five templates with unique ids', () => {
-  assert.equal(templates.length, 5);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 5);
+test('exports six templates with unique ids', () => {
+  assert.equal(templates.length, 6);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 6);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -99,6 +99,32 @@ test('figura zlozona: the cut-out never exceeds the outer rectangle', () => {
       const task = template.generate(difficulty, createRng(seed));
       const [W, H, w, h] = task.tresc.match(/\d+/g).map(Number);
       assert.ok(w < W && h < H, `cutout not smaller than outer rectangle: ${task.tresc}`);
+    }
+  }
+});
+
+test('trojkat rownoboczny prawda/falsz: both judgments are independently correct, and the figura matches the stated side', () => {
+  const template = templates.find((t) => t.id === 'geometria_trojkat_rownoboczny_prawda_falsz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const [s] = task.tresc.match(/boku długości (\d+) cm/).slice(1).map(Number);
+      assert.equal(task.figura.typ, 'trojkat');
+      assert.equal(task.figura.bok, s);
+
+      const k = s / 2;
+      const trueHeightText = k === 1 ? '√3 cm' : `${k}√3 cm`;
+      const trueAreaText = `${k * k}√3 cm²`;
+
+      const heightClaim = task.tresc.match(/Wysokość tego trójkąta jest równa ([^.]+)\./)[1];
+      const areaClaim = task.tresc.match(/Pole tego trójkąta jest równe ([^.]+)\./)[1];
+      const answerMatch = task.odpowiedz.match(/^1\. (Prawda|Fałsz), 2\. (Prawda|Fałsz)$/);
+      assert.ok(answerMatch, `unexpected answer format: "${task.odpowiedz}"`);
+
+      const heightJudgedTrue = answerMatch[1] === 'Prawda';
+      const areaJudgedTrue = answerMatch[2] === 'Prawda';
+      assert.equal(heightClaim === trueHeightText, heightJudgedTrue, task.tresc);
+      assert.equal(areaClaim === trueAreaText, areaJudgedTrue, task.tresc);
     }
   }
 });

@@ -2,6 +2,7 @@
 // topic produced a task, so new topics need no change here.
 
 import { chartSvg } from './chart.js';
+import { figuraSvg } from './figura.js';
 
 const LITERY = ['A', 'B', 'C', 'D'];
 
@@ -38,6 +39,11 @@ function wykresHtml(task) {
   return `<div class="wykres-kontener">${akcje}${chartSvg(task.wykres)}</div>`;
 }
 
+function figuraHtml(task) {
+  if (!task.figura) return '';
+  return `<div class="figura-kontener">${figuraSvg(task.figura)}</div>`;
+}
+
 function zadanieNaglowekHtml(index) {
   return (
     '<div class="zadanie-naglowek">' +
@@ -57,6 +63,7 @@ export function taskToHtml(task, index) {
     '<li class="zadanie">',
     zadanieNaglowekHtml(index),
     `<p class="zadanie-tresc">${escapeHtml(task.tresc)}</p>`,
+    figuraHtml(task),
     wykresHtml(task),
     optionsHtml(task),
     '<div class="odpowiedz-blok" hidden>',

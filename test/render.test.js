@@ -98,6 +98,27 @@ test('omits the chart container when a task has no wykres field', () => {
   assert.ok(!html.includes('wykres-kontener'));
 });
 
+const taskWithFigura = {
+  id: 'test_figura',
+  type: 'otwarte',
+  tresc: 'Dany jest trójkąt równoboczny.',
+  figura: { typ: 'trojkat', bok: 6 },
+  odpowiedz: 'Prawda',
+  rozwiazanie: 'Bo tak.',
+};
+
+test('embeds the figura svg, unescaped, when a task has a figura field', () => {
+  const html = taskToHtml(taskWithFigura, 0);
+  assert.match(html, /<div class="figura-kontener">/);
+  assert.match(html, /<svg class="figura"/);
+  assert.ok(!html.includes('&lt;svg'), 'figura markup was escaped');
+});
+
+test('omits the figura container when a task has no figura field', () => {
+  const html = taskToHtml(openTask, 0);
+  assert.ok(!html.includes('figura-kontener'));
+});
+
 test('emits reroll-numbers and reroll-type buttons carrying the task index', () => {
   const html = taskToHtml(openTask, 4);
   assert.match(html, /<div class="zadanie-akcje">/);

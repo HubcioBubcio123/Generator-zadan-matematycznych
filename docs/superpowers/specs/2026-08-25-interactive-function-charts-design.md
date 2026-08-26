@@ -47,8 +47,6 @@ sketch, in a contrasting color, so they can compare directly.
 - Auto-grading how closely the student's freehand sketch matches the
   correct curve. Self-check only, same as the rest of the app: the student
   visually compares their own drawing to the revealed overlay.
-- An undo/clear-drawing button. Not requested; can be added later if it
-  turns out to matter in practice.
 - Charts for any topic other than `funkcje`. Trygonometria, ciągi, etc. are
   still not in scope.
 - Final difficulty tuning — same open item as before, now simplified since
@@ -114,6 +112,31 @@ For each chart SVG found, on its `.nakladka` overlay:
 This is simpler than the code it replaces: no domain/range math, no
 function evaluation, no tooltip formatting — just client-to-SVG pixel
 conversion and path-string building.
+
+## Chart Controls (v3 addition): eraser and enlarge toggle
+
+Each chart's `.wykres-kontener` (emitted by `js/render.js`) carries a
+`.wykres-akcje` toolbar above the SVG with two buttons:
+
+- **Wyczyść rysunek** (clear-drawing): resets the closure's `pathData` to
+  `''` and clears the `rysunek-ucznia` path's `d` attribute, giving the
+  student a blank grid to redraw on without needing a fresh sheet. This is
+  a clear-all, not an eraser tool or per-stroke undo — a deliberate scope
+  choice to keep the implementation simple.
+- **Powiększ** / **Pomniejsz** (enlarge/shrink toggle): toggles a
+  `wykres-kontener--powiekszony` class on the container, which raises the
+  chart's CSS `max-width`. No coordinate-math changes are needed —
+  `clientToSvgPoint` already reads the SVG's live
+  `getBoundingClientRect()`, so drawing keeps working correctly at
+  whatever size the chart is rendered at.
+
+Enlarging is a dedicated button rather than a tap-to-enlarge gesture on
+the chart itself, so a quick intentional stroke is never misread as a
+tap. Both buttons are wired in `js/chartInteraction.js`'s `initCharts()`
+(which now iterates `.wykres-kontener` elements rather than bare
+`svg.wykres`) and are hidden on print by the existing
+`@media print { button { display: none } }` rule — no new print CSS
+needed.
 
 ## Answer Reveal Integration (`js/app.js`) — small addition
 
@@ -198,7 +221,6 @@ nothing to give both forms of the answer.
 
 - General difficulty recalibration against real podstawa programowa /
   matura reference material — still open, applies project-wide.
-- No undo/clear-drawing control (see Non-Goals).
 - **Touch scroll is blocked over charts.** `.wykres` needs `touch-action:
   none` so freehand drawing can capture movement in every direction — but
   since charts are near-full-width on a phone, a finger landing on one

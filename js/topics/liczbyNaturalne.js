@@ -110,6 +110,30 @@ function nwdNww(difficulty, rng) {
   };
 }
 
+const SUMA_KOLEJNYCH_RANGES = {
+  latwy: { nMax: 30 },
+  sredni: { nMax: 100 },
+  trudny: { nMax: 500 },
+};
+
+function sumaKolejnych(difficulty, rng) {
+  const { nMax } = SUMA_KOLEJNYCH_RANGES[difficulty];
+  const n = rng.int(5, nMax);
+  const suma = (n * (n + 1)) / 2;
+
+  return {
+    id: 'liczby_naturalne_suma_kolejnych',
+    type: 'otwarte',
+    tresc:
+      `Sumę S kolejnych liczb naturalnych od 1 do n można obliczyć ze wzoru ` +
+      `S = n · (n + 1) : 2. Oblicz sumę kolejnych liczb naturalnych od 1 do ${n}.`,
+    odpowiedz: formatNumber(suma),
+    rozwiazanie:
+      `Podstawiamy n = ${n} do wzoru: S = ${n} · (${n} + 1) : 2.\n` +
+      `S = ${n} · ${n + 1} : 2 = ${n * (n + 1)} : 2 = ${formatNumber(suma)}.`,
+  };
+}
+
 // Builds a chain like "120 + 45 - 30" where the running total never dips
 // below zero, so klasa-4 students never have to reason about negatives.
 function buildChain(rng, max, count, minusCount) {
@@ -209,4 +233,5 @@ export const templates = [
   { id: 'liczby_naturalne_mnozenie', generate: mnozenie },
   { id: 'liczby_naturalne_dzielenie', generate: dzielenie },
   { id: 'liczby_naturalne_nwd_nww', generate: nwdNww },
+  { id: 'liczby_naturalne_suma_kolejnych', generate: sumaKolejnych },
 ];

@@ -171,3 +171,15 @@ test('results are never negative for this klasa-4 topic', () => {
     }
   }
 });
+
+test('suma_kolejnych: the stated sum equals n(n+1)/2 for the stated n', () => {
+  const template = templates.find((t) => t.id === 'liczby_naturalne_suma_kolejnych');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const [n] = task.tresc.match(/do (\d+)\./).slice(1).map(Number);
+      const expected = (n * (n + 1)) / 2;
+      assert.equal(parsePl(task.odpowiedz), expected, `n=${n} -> ${task.odpowiedz}`);
+    }
+  }
+});

@@ -60,9 +60,12 @@
             <label><input type="radio" name="trudnosc" value="trudny" /> Trudny</label>
           </fieldset>
 
-          <p class="pole">
+          <p class="pole" id="pole-liczba-zadan">
             <label for="liczba-zadan">Liczba zadań (1–12)</label>
             <input type="number" id="liczba-zadan" min="1" max="12" step="1" value="6" />
+          </p>
+          <p class="pole" id="info-liczba-zadan" hidden>
+            Liczba zadań: 20 (stała, jak na egzaminie ósmoklasisty).
           </p>
 
           <p id="komunikat-bledu" class="komunikat" role="alert" hidden></p>

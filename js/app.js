@@ -22,6 +22,8 @@ const wyborEgzaminu = el('wybor-egzaminu');
 const grupaCwiczenia = el('grupa-cwiczenia');
 const grupaEgzamin = el('grupa-egzamin');
 const liczbaZadan = el('liczba-zadan');
+const poleLiczbaZadan = el('pole-liczba-zadan');
+const infoLiczbaZadan = el('info-liczba-zadan');
 const komunikat = el('komunikat-bledu');
 const listaZadan = el('lista-zadan');
 const naglowekArkusza = el('naglowek-arkusza');
@@ -69,6 +71,14 @@ function refreshTryb() {
   const egzamin = selectedRadio('tryb') === 'egzamin';
   grupaCwiczenia.hidden = egzamin;
   grupaEgzamin.hidden = !egzamin;
+  refreshLiczbaZadanWidoczna();
+}
+
+function refreshLiczbaZadanWidoczna() {
+  const staleZadania =
+    selectedRadio('tryb') === 'egzamin' && wyborEgzaminu.value === 'osmoklasisty';
+  poleLiczbaZadan.hidden = staleZadania;
+  infoLiczbaZadan.hidden = !staleZadania;
 }
 
 function showError(message) {
@@ -205,6 +215,7 @@ function init() {
 
   wyborEtapu.addEventListener('change', refreshKlasy);
   wyborKlasy.addEventListener('change', refreshDzialy);
+  wyborEgzaminu.addEventListener('change', refreshLiczbaZadanWidoczna);
   for (const input of formularz.querySelectorAll('input[name="tryb"]')) {
     input.addEventListener('change', refreshTryb);
   }

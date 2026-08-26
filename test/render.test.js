@@ -98,6 +98,19 @@ test('omits the chart container when a task has no wykres field', () => {
   assert.ok(!html.includes('wykres-kontener'));
 });
 
+test('emits reroll-numbers and reroll-type buttons carrying the task index', () => {
+  const html = taskToHtml(openTask, 4);
+  assert.match(html, /<div class="zadanie-akcje">/);
+  assert.match(
+    html,
+    /<button type="button" class="zadanie-losuj-liczby" data-index="4">Losuj nowe liczby<\/button>/
+  );
+  assert.match(
+    html,
+    /<button type="button" class="zadanie-losuj-typ" data-index="4">Losuj inny typ zadania<\/button>/
+  );
+});
+
 test('emits a clear-drawing button and an enlarge-toggle button alongside the chart', () => {
   const html = taskToHtml(taskWithChart, 0);
   assert.match(html, /<div class="wykres-akcje">/);

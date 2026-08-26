@@ -38,12 +38,24 @@ function wykresHtml(task) {
   return `<div class="wykres-kontener">${akcje}${chartSvg(task.wykres)}</div>`;
 }
 
+function zadanieNaglowekHtml(index) {
+  return (
+    '<div class="zadanie-naglowek">' +
+    `<p class="zadanie-numer">Zadanie ${index + 1}.</p>` +
+    '<div class="zadanie-akcje">' +
+    `<button type="button" class="zadanie-losuj-liczby" data-index="${index}">Losuj nowe liczby</button>` +
+    `<button type="button" class="zadanie-losuj-typ" data-index="${index}">Losuj inny typ zadania</button>` +
+    '</div>' +
+    '</div>'
+  );
+}
+
 // The answer block is nested inside the task's own <li> so revealing it never
 // makes the student scroll away from the question.
 export function taskToHtml(task, index) {
   return [
     '<li class="zadanie">',
-    `<p class="zadanie-numer">Zadanie ${index + 1}.</p>`,
+    zadanieNaglowekHtml(index),
     `<p class="zadanie-tresc">${escapeHtml(task.tresc)}</p>`,
     wykresHtml(task),
     optionsHtml(task),

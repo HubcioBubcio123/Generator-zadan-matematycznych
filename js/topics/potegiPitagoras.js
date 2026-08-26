@@ -138,9 +138,34 @@ function pitagoras(difficulty, rng) {
   };
 }
 
+function pitagorasMapaOdleglosc(difficulty, rng) {
+  const { scaleMax } = RANGES[difficulty];
+  const [a0, b0, c0] = rng.pick(TRIPLES);
+  const scale = rng.int(1, scaleMax);
+  const dx = a0 * scale;
+  const dy = b0 * scale;
+  const distance = c0 * scale;
+
+  return {
+    id: 'pitagoras_mapa_odleglosc',
+    type: 'otwarte',
+    figura: { typ: 'mapa', dx, dy },
+    tresc:
+      `Punkt B znajduje się ${dx} km na zachód i ${dy} km na północ od punktu A. ` +
+      `Oblicz odległość w linii prostej między punktami A i B.`,
+    odpowiedz: `${formatNumber(distance)} km`,
+    rozwiazanie:
+      `Odcinek łączący A i B jest przeciwprostokątną trójkąta prostokątnego ` +
+      `o przyprostokątnych ${dx} km i ${dy} km.\n` +
+      `Z twierdzenia Pitagorasa: ${dx}² + ${dy}² = ${dx * dx} + ${dy * dy} = ${dx * dx + dy * dy}.\n` +
+      `Odległość = pierwiastek z ${dx * dx + dy * dy} = ${distance} km.`,
+  };
+}
+
 export const templates = [
   { id: 'potegi_obliczanie', generate: potegi },
   { id: 'pierwiastki_obliczanie', generate: pierwiastki },
   { id: 'pierwiastki_uproszczenie', generate: pierwiastkiUproszczenie },
   { id: 'pitagoras_przeciwprostokatna', generate: pitagoras },
+  { id: 'pitagoras_mapa_odleglosc', generate: pitagorasMapaOdleglosc },
 ];

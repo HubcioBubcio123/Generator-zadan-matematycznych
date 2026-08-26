@@ -17,9 +17,9 @@ function isSquareFree(n) {
   return true;
 }
 
-test('exports four templates with unique ids', () => {
-  assert.equal(templates.length, 4);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
+test('exports five templates with unique ids', () => {
+  assert.equal(templates.length, 5);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 5);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -118,6 +118,21 @@ test('pitagoras answers are whole numbers with a unit', () => {
       const task = template.generate(difficulty, createRng(seed));
       assert.ok(task.odpowiedz.includes('cm'), task.odpowiedz);
       assert.ok(Number.isInteger(parsePl(task.odpowiedz)), task.odpowiedz);
+    }
+  }
+});
+
+test('pitagoras mapa: the distance satisfies dx^2 + dy^2 = distance^2, and the figura matches', () => {
+  const template = templates.find((t) => t.id === 'pitagoras_mapa_odleglosc');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const [dx, dy] = task.tresc.match(/\d+/g).map(Number);
+      const distance = parsePl(task.odpowiedz);
+      assert.equal(dx * dx + dy * dy, distance * distance, `${dx},${dy} -> ${distance}`);
+      assert.equal(task.figura.typ, 'mapa');
+      assert.equal(task.figura.dx, dx);
+      assert.equal(task.figura.dy, dy);
     }
   }
 });

@@ -160,11 +160,24 @@ export function rerollTaskNumbers(options, tasks, index, seed) {
 // Regenerates tasks[index] using a different template from the same pool
 // (falling back to the same template when the pool has only one), for a
 // student who wants a different kind of question in that slot entirely.
+// In a fixedStructure exam mode (osmoklasisty), the replacement must keep the
+// slot's zamkniete/otwarte type, or a reroll would silently break the exam's
+// fixed 14/6 closed/open structure.
 export function rerollTaskType(options, tasks, index, seed) {
   const pool = resolvePool(options);
   const current = tasks[index];
-  const alternatives = pool.filter((t) => t.id !== current.id);
-  const candidates = alternatives.length > 0 ? alternatives : pool;
+
+  let candidatePool = pool;
+  if (options.mode === 'egzamin') {
+    const mode = EXAM_MODES.find((m) => m.key === options.examKey);
+    if (mode && mode.fixedStructure) {
+      ensureProbeTypes(pool);
+      candidatePool = pool.filter((t) => t.probeType === current.type);
+    }
+  }
+
+  const alternatives = candidatePool.filter((t) => t.id !== current.id);
+  const candidates = alternatives.length > 0 ? alternatives : candidatePool;
   const rng = createRng(seed ?? Math.floor(Math.random() * 2 ** 31));
   const template = rng.pick(candidates);
   return generateForSlot(rng, options, tasks, template);

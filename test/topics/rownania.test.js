@@ -143,6 +143,17 @@ test('srednia arytmetyczna: c equals 3Y - 2X for the stated X and Y', () => {
   }
 });
 
+test('srednia arytmetyczna: c is always strictly positive, across seeds and difficulties', () => {
+  const template = templates.find((t) => t.id === 'rownania_srednia_arytmetyczna');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 300; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const c = parsePl(task.odpowiedz);
+      assert.ok(c > 0, `${difficulty} seed ${seed}: c = ${c} in "${task.tresc}"`);
+    }
+  }
+});
+
 function parsePlComma(text) {
   return Number(text.replace(',', '.'));
 }

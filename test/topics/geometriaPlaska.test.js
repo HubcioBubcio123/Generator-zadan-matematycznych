@@ -114,7 +114,7 @@ test('trojkat rownoboczny prawda/falsz: both judgments are independently correct
 
       const k = s / 2;
       const trueHeightText = k === 1 ? '√3 cm' : `${k}√3 cm`;
-      const trueAreaText = `${k * k}√3 cm²`;
+      const trueAreaText = k === 1 ? '√3 cm²' : `${k * k}√3 cm²`;
 
       const heightClaim = task.tresc.match(/Wysokość tego trójkąta jest równa ([^.]+)\./)[1];
       const areaClaim = task.tresc.match(/Pole tego trójkąta jest równe ([^.]+)\./)[1];

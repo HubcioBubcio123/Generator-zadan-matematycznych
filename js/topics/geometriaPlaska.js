@@ -170,7 +170,7 @@ function trojkatRownobocznyPrawdaFalsz(difficulty, rng) {
   const s = 2 * k;
 
   const trueHeightText = k === 1 ? '√3 cm' : `${k}√3 cm`;
-  const trueAreaText = `${k * k}√3 cm²`;
+  const trueAreaText = k === 1 ? '√3 cm²' : `${k * k}√3 cm²`;
   const wrongHeightText = `${s}√3 cm`; // pominięte dzielenie przez 2
   const wrongAreaText = `${2 * k * k}√3 cm²`; // pominięte dzielenie przez 2
 

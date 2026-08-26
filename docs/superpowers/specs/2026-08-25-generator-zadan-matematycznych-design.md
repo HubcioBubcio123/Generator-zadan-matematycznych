@@ -161,9 +161,10 @@ Exams are cumulative, so exam modes draw from unions rather than one grade:
 - **Egzamin ósmoklasisty** — union of all SP topics (klasy 4–8).
 - **Matura (poziom podstawowy)** — union of all LO/technikum topics (klasy 1–4).
 
-Each exam mode declares a task-type mix approximating the real sheet
-(roughly 60% zamknięte / 40% otwarte), which `sheetGenerator` honors when
-composing a sheet.
+Each exam mode declares a task-type mix approximating the real sheet.
+Matura still uses a ~60% zamknięte / 40% otwarte ratio; osmoklasisty uses a
+fixed 14-closed/6-open structure matching the real exam's exact layout.
+`sheetGenerator` honors whichever shape is declared when composing a sheet.
 
 ## User Interface
 

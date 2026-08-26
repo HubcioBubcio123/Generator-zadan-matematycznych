@@ -296,3 +296,55 @@ test('rerollTaskType is deterministic for a given seed', () => {
   const b = rerollTaskType(rerollOptions, sheet, 0, 77);
   assert.deepEqual(a, b);
 });
+
+test('osmoklasisty exam mode: rerollTaskType on a closed slot never turns it open', () => {
+  const options = {
+    mode: 'egzamin',
+    examKey: 'osmoklasisty',
+    difficulty: 'sredni',
+    count: 20,
+    seed: 2,
+  };
+  const sheet = generateSheet(options);
+  assert.equal(sheet[0].type, 'zamkniete');
+  for (let seed = 0; seed < 40; seed++) {
+    const rerolled = rerollTaskType(options, sheet, 0, seed);
+    assert.equal(rerolled.type, 'zamkniete', `seed ${seed} produced ${rerolled.type}`);
+  }
+});
+
+test('osmoklasisty exam mode: rerollTaskType on an open slot never turns it closed', () => {
+  const options = {
+    mode: 'egzamin',
+    examKey: 'osmoklasisty',
+    difficulty: 'sredni',
+    count: 20,
+    seed: 2,
+  };
+  const sheet = generateSheet(options);
+  assert.equal(sheet[19].type, 'otwarte');
+  for (let seed = 0; seed < 40; seed++) {
+    const rerolled = rerollTaskType(options, sheet, 19, seed);
+    assert.equal(rerolled.type, 'otwarte', `seed ${seed} produced ${rerolled.type}`);
+  }
+});
+
+test('non-fixedStructure modes still let rerollTaskType change the task type', () => {
+  const modesToCheck = [
+    rerollOptions,
+    { mode: 'egzamin', examKey: 'matura', difficulty: 'sredni', count: 12, seed: 3 },
+  ];
+  for (const options of modesToCheck) {
+    const sheet = generateSheet(options);
+    const originalType = sheet[0].type;
+    let sawDifferentType = false;
+    for (let seed = 0; seed < 40; seed++) {
+      const rerolled = rerollTaskType(options, sheet, 0, seed);
+      if (rerolled.type !== originalType) {
+        sawDifferentType = true;
+        break;
+      }
+    }
+    assert.ok(sawDifferentType, `expected some type variety for ${JSON.stringify(options)}`);
+  }
+});

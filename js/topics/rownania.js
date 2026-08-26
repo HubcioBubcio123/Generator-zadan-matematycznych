@@ -185,8 +185,10 @@ const SREDNIA_RANGES = {
 
 function sredniaArytmetyczna(difficulty, rng) {
   const { meanMax } = SREDNIA_RANGES[difficulty];
-  const X = rng.int(1, meanMax);
   const Y = rng.int(1, meanMax);
+  // Constrain X against Y so c = 3Y - 2X always comes out strictly positive,
+  // matching the real exam question this template is calibrated against.
+  const X = rng.int(1, Math.floor((3 * Y - 1) / 2));
   const c = 3 * Y - 2 * X;
   const correct = formatNumber(c);
 

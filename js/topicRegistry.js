@@ -11,6 +11,7 @@ import { templates as potegiPitagoras } from './topics/potegiPitagoras.js';
 import { templates as funkcje } from './topics/funkcje.js';
 import { templates as liceumZaawansowane } from './topics/liceumZaawansowane.js';
 import { templates as bryly } from './topics/bryly.js';
+import { templates as statystykaEgzamin } from './topics/statystykaEgzamin.js';
 
 export const TOPICS = [
   { key: 'liczby_naturalne', label: 'Działania na liczbach naturalnych', templates: liczbyNaturalne },
@@ -23,6 +24,9 @@ export const TOPICS = [
   { key: 'funkcje', label: 'Funkcja liniowa i kwadratowa', templates: funkcje },
   { key: 'liceum_zaawansowane', label: 'Ciągi, trygonometria, geometria analityczna, prawdopodobieństwo', templates: liceumZaawansowane },
   { key: 'bryly', label: 'Bryły: pole powierzchni i objętość', templates: bryly },
+  // Exam-exclusive: deliberately not listed under any grade's topicKeys
+  // below, so it never appears in Ćwiczenia mode's Dział dropdown.
+  { key: 'statystyka_osmoklasisty', label: 'Statystyka (egzamin ósmoklasisty)', templates: statystykaEgzamin },
 ];
 
 export const GRADES = [

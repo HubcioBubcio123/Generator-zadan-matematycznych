@@ -89,6 +89,33 @@ test('rozstep: the stated range equals the independently recomputed max minus mi
   }
 });
 
+function polishOsobaForm(n) {
+  if (n === 1) return 'osoba';
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'osoby';
+  return 'osób';
+}
+
+test('procent z tabeli: each count uses grammatically correct Polish pluralization', () => {
+  const template = templates.find((t) => t.id === 'statystyka_procent_z_tabeli_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const matches = [...task.tresc.matchAll(/(\d+) (osoba|osoby|osób)/g)];
+      assert.equal(matches.length, 3, `expected 3 count phrases in "${task.tresc}"`);
+      for (const [, countText, word] of matches) {
+        const expected = polishOsobaForm(Number(countText));
+        assert.equal(
+          word,
+          expected,
+          `"${countText} ${word}" should be "${countText} ${expected}" in "${task.tresc}"`
+        );
+      }
+    }
+  }
+});
+
 test('procent z tabeli: the stated percent equals the independently recomputed count/total, and counts sum to the total', () => {
   const template = templates.find((t) => t.id === 'statystyka_procent_z_tabeli_egz');
   const BIERNIK = ['matematykę', 'informatykę', 'fizykę'];
@@ -97,7 +124,7 @@ test('procent z tabeli: the stated percent equals the independently recomputed c
       const task = template.generate(difficulty, createRng(seed));
       const total = Number(task.tresc.match(/wśród (\d+) uczniów/)[1]);
       const rowMatch = task.tresc.match(
-        /matematyka - (\d+) osób, informatyka - (\d+) osób, fizyka - (\d+) osób/
+        /matematyka - (\d+) (?:osoba|osoby|osób), informatyka - (\d+) (?:osoba|osoby|osób), fizyka - (\d+) (?:osoba|osoby|osób)/
       );
       assert.ok(rowMatch, `unexpected table format: "${task.tresc}"`);
       const counts = rowMatch.slice(1).map(Number);

@@ -160,6 +160,16 @@ const TABELA_RANGES = {
 const PRZEDMIOTY_MIANOWNIK = ['matematyka', 'informatyka', 'fizyka'];
 const PRZEDMIOTY_BIERNIK = ['matematykę', 'informatykę', 'fizykę'];
 
+// Polish count-noun agreement: 1 osoba, 2-4 osoby, 5+ osób — except the
+// teens (12-14), which take osób despite ending in 2-4.
+function osobaForma(n) {
+  if (n === 1) return 'osoba';
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'osoby';
+  return 'osób';
+}
+
 function procentZTabeli(difficulty, rng) {
   const { totals } = TABELA_RANGES[difficulty];
   const total = rng.pick(totals);
@@ -189,7 +199,9 @@ function procentZTabeli(difficulty, rng) {
 
   const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
 
-  const wiersze = PRZEDMIOTY_MIANOWNIK.map((label, i) => `${label} - ${counts[i]} osób`).join(', ');
+  const wiersze = PRZEDMIOTY_MIANOWNIK.map(
+    (label, i) => `${label} - ${counts[i]} ${osobaForma(counts[i])}`
+  ).join(', ');
 
   return {
     id: 'statystyka_procent_z_tabeli_egz',

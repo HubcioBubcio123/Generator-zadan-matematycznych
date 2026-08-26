@@ -111,3 +111,42 @@ export function generateSheet(options) {
 
   return sheet;
 }
+
+// Shared by both reroll functions below: draws from `template` until it finds
+// text that collides with no task currently in the sheet (same dedup
+// guarantee generateSheet gives the whole sheet), falling back to a possible
+// repeat after MAX_ATTEMPTS_PER_TASK tries rather than hanging.
+function generateForSlot(rng, options, tasks, template) {
+  const seenTexts = new Set(tasks.map(taskIdentity));
+  for (let attempt = 0; attempt < MAX_ATTEMPTS_PER_TASK; attempt++) {
+    const candidate = template.generate(options.difficulty, rng);
+    if (!seenTexts.has(taskIdentity(candidate))) return candidate;
+  }
+  return template.generate(options.difficulty, rng);
+}
+
+// Regenerates tasks[index] using its own template, keeping the same question
+// type but drawing fresh numbers. `seed` is optional (tests pin it; the UI
+// omits it for a genuinely random reroll), same convention as generateSheet.
+export function rerollTaskNumbers(options, tasks, index, seed) {
+  const pool = resolvePool(options);
+  const template = pool.find((t) => t.id === tasks[index].id);
+  if (!template) {
+    throw new Error('Nie znaleziono szablonu dla tego zadania.');
+  }
+  const rng = createRng(seed ?? Math.floor(Math.random() * 2 ** 31));
+  return generateForSlot(rng, options, tasks, template);
+}
+
+// Regenerates tasks[index] using a different template from the same pool
+// (falling back to the same template when the pool has only one), for a
+// student who wants a different kind of question in that slot entirely.
+export function rerollTaskType(options, tasks, index, seed) {
+  const pool = resolvePool(options);
+  const current = tasks[index];
+  const alternatives = pool.filter((t) => t.id !== current.id);
+  const candidates = alternatives.length > 0 ? alternatives : pool;
+  const rng = createRng(seed ?? Math.floor(Math.random() * 2 ** 31));
+  const template = rng.pick(candidates);
+  return generateForSlot(rng, options, tasks, template);
+}

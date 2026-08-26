@@ -1,0 +1,185 @@
+// Arytmetyka — bank egzaminu ósmoklasisty. Exam-exclusive: this topic is
+// registered in js/topicRegistry.js's TOPICS but deliberately listed under
+// no grade's topicKeys, so it never appears in Ćwiczenia mode.
+//
+// Covers two things currently uncovered anywhere in the app:
+//   - "Proporcjonalność prosta" (podstawa programowa, klasa 7): recognizing
+//     and using directly-proportional quantities, including "podział
+//     proporcjonalny" (splitting a total in a given ratio).
+//   - Order-of-operations with signed integers combined with powers,
+//     mirroring the real exam's own style of comparing/evaluating short
+//     numeric expressions (e.g. its Zadanie 3/4).
+//
+// Poziomy trudności:
+//   łatwy   - mniejsze wartości
+//   średni  - większe wartości
+//   trudny  - jeszcze większe wartości / szerszy zakres współczynników
+
+import { formatNumber } from '../format.js';
+import { buildOptions } from '../distractors.js';
+
+const PROPORCJA_RANGES = {
+  latwy: { aMax: 6, xMax: 12 },
+  sredni: { aMax: 10, xMax: 20 },
+  trudny: { aMax: 15, xMax: 30 },
+};
+
+function proporcjaWartosc(difficulty, rng) {
+  const { aMax, xMax } = PROPORCJA_RANGES[difficulty];
+  const a = rng.int(2, aMax);
+  const x1 = rng.int(2, xMax);
+  let x2 = rng.int(2, xMax);
+  while (x2 === x1) x2 = rng.int(2, xMax);
+  const y1 = a * x1;
+  const y2 = a * x2;
+
+  return {
+    id: 'arytmetyka_proporcja_wartosc_egz',
+    type: 'otwarte',
+    tresc:
+      `Wielkości x i y są wprost proporcjonalne. Gdy x = ${x1}, to y = ${y1}. ` +
+      `Oblicz wartość y, gdy x = ${x2}.`,
+    odpowiedz: formatNumber(y2),
+    rozwiazanie:
+      `Współczynnik proporcjonalności: a = y : x = ${y1} : ${x1} = ${a}.\n` +
+      `Dla x = ${x2}: y = a · x = ${a} · ${x2} = ${formatNumber(y2)}.`,
+  };
+}
+
+const PROPORCJA_ZADANIE_RANGES = {
+  latwy: { jednostkowaMax: 8, nMax: 10 },
+  sredni: { jednostkowaMax: 15, nMax: 15 },
+  trudny: { jednostkowaMax: 25, nMax: 20 },
+};
+
+// Polish noun/adjective/verb agreement for "zeszyt" (same pattern as
+// osobaForma in statystykaEgzamin.js): 1 -> singular; 2-4 except teens ->
+// nominative plural + plural verb; 5+ or teens -> genitive plural + verb
+// treated as singular. n1/n2 here are always >= 2, but the n===1 branch is
+// kept so the helper stays correct if the range ever changes.
+function zeszytForma(n) {
+  if (n === 1) {
+    return { przymiotnik: 'identyczny', rzeczownik: 'zeszyt', takich: 'taki', czasownik: 'kosztuje' };
+  }
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) {
+    return { przymiotnik: 'identyczne', rzeczownik: 'zeszyty', takich: 'takie', czasownik: 'kosztują' };
+  }
+  return { przymiotnik: 'identycznych', rzeczownik: 'zeszytów', takich: 'takich', czasownik: 'kosztuje' };
+}
+
+function proporcjaZadanie(difficulty, rng) {
+  const { jednostkowaMax, nMax } = PROPORCJA_ZADANIE_RANGES[difficulty];
+  const jednostkowa = rng.int(2, jednostkowaMax);
+  const n1 = rng.int(2, nMax);
+  let n2 = rng.int(2, nMax);
+  while (n2 === n1) n2 = rng.int(2, nMax);
+  const w1 = jednostkowa * n1;
+  const w2 = jednostkowa * n2;
+  const correct = `${formatNumber(w2)} zł`;
+  const forma1 = zeszytForma(n1);
+  const forma2 = zeszytForma(n2);
+
+  // Typowe błędy: podanie ceny za n1 zamiast n2, dodanie zamiast pomnożenia,
+  // dodanie ceny jednostkowej zamiast przeskalowania.
+  const wrong = [
+    `${formatNumber(w1)} zł`,
+    `${formatNumber(jednostkowa * (n1 + n2))} zł`,
+    `${formatNumber(w2 + jednostkowa)} zł`,
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_proporcja_zadanie_egz',
+    type: 'zamkniete',
+    tresc:
+      `${n1} ${forma1.przymiotnik} ${forma1.rzeczownik} ${forma1.czasownik} łącznie ${formatNumber(w1)} zł. ` +
+      `Ile ${forma2.czasownik} ${n2} ${forma2.takich} ${forma2.rzeczownik}?`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Cena jednego zeszytu: ${formatNumber(w1)} : ${n1} = ${formatNumber(jednostkowa)} zł.\n` +
+      `Cena ${n2} zeszytów: ${formatNumber(jednostkowa)} · ${n2} = ${correct}.`,
+  };
+}
+
+const PODZIAL_RANGES = {
+  latwy: { jednostkaMax: 10, stosunekMax: 5 },
+  sredni: { jednostkaMax: 20, stosunekMax: 8 },
+  trudny: { jednostkaMax: 30, stosunekMax: 10 },
+};
+
+function podzialProporcjonalny(difficulty, rng) {
+  const { jednostkaMax, stosunekMax } = PODZIAL_RANGES[difficulty];
+  const a = rng.int(1, stosunekMax);
+  let b = rng.int(1, stosunekMax);
+  while (b === a) b = rng.int(1, stosunekMax);
+  const jednostka = rng.int(2, jednostkaMax);
+  const total = (a + b) * jednostka;
+  const wieksza = Math.max(a, b) * jednostka;
+  const mniejsza = Math.min(a, b) * jednostka;
+  const correct = formatNumber(wieksza);
+
+  // Typowe błędy: podanie mniejszej części, podanie całości, błędny
+  // podział na pół zamiast w podanym stosunku.
+  const wrong = [formatNumber(mniejsza), formatNumber(total), formatNumber(Math.round(total / 2))];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_podzial_proporcjonalny_egz',
+    type: 'zamkniete',
+    tresc: `Podziel liczbę ${formatNumber(total)} na dwie części w stosunku ${a}:${b}. Oblicz większą z tych części.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Liczbę dzielimy na ${a + b} równych jednostek: ${formatNumber(total)} : ${a + b} = ${formatNumber(jednostka)}.\n` +
+      `Większa część odpowiada ${Math.max(a, b)} jednostkom: ${Math.max(a, b)} · ${formatNumber(jednostka)} = ${correct}.`,
+  };
+}
+
+const DZIALANIA_RANGES = {
+  latwy: { max: 6 },
+  sredni: { max: 9 },
+  trudny: { max: 12 },
+};
+
+function dzialaniaCalkowite(difficulty, rng) {
+  const { max } = DZIALANIA_RANGES[difficulty];
+  const a = rng.int(2, Math.min(max, 10));
+  const b = rng.int(2, max);
+  const c = rng.int(2, max);
+  const d = rng.int(2, max * 2);
+  const wartosc = a * a + b * c - d;
+  const correct = formatNumber(wartosc);
+
+  // Typowe błędy: błędny znak przy kwadracie liczby ujemnej, błędny znak
+  // przy mnożeniu dwóch liczb ujemnych, błędny znak przy dodaniu ujemnej.
+  const wrong = [formatNumber(-(a * a) + b * c - d), formatNumber(a * a - b * c - d), formatNumber(a * a + b * c + d)];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_dzialania_calkowite_egz',
+    type: 'zamkniete',
+    tresc: `Oblicz wartość wyrażenia: (-${a})² - ${b} · (-${c}) + (-${d}).`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `(-${a})² = ${a * a} (kwadrat liczby ujemnej jest dodatni).\n` +
+      `${b} · (-${c}) = ${-b * c}, więc odejmujemy ten wynik: -(${-b * c}) = ${b * c}.\n` +
+      `Razem: ${a * a} + ${b * c} + (-${d}) = ${a * a} + ${b * c} - ${d} = ${correct}.`,
+  };
+}
+
+export const templates = [
+  { id: 'arytmetyka_proporcja_wartosc_egz', generate: proporcjaWartosc },
+  { id: 'arytmetyka_proporcja_zadanie_egz', generate: proporcjaZadanie },
+  { id: 'arytmetyka_podzial_proporcjonalny_egz', generate: podzialProporcjonalny },
+  { id: 'arytmetyka_dzialania_calkowite_egz', generate: dzialaniaCalkowite },
+];

@@ -30,7 +30,12 @@ function answerLabel(task) {
 
 function wykresHtml(task) {
   if (!task.wykres) return '';
-  return `<div class="wykres-kontener">${chartSvg(task.wykres)}</div>`;
+  const akcje =
+    '<div class="wykres-akcje">' +
+    '<button type="button" class="wykres-wyczysc">Wyczyść rysunek</button>' +
+    '<button type="button" class="wykres-powieksz">Powiększ</button>' +
+    '</div>';
+  return `<div class="wykres-kontener">${akcje}${chartSvg(task.wykres)}</div>`;
 }
 
 // The answer block is nested inside the task's own <li> so revealing it never

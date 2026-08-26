@@ -97,3 +97,10 @@ test('omits the chart container when a task has no wykres field', () => {
   const html = taskToHtml(openTask, 0);
   assert.ok(!html.includes('wykres-kontener'));
 });
+
+test('emits a clear-drawing button and an enlarge-toggle button alongside the chart', () => {
+  const html = taskToHtml(taskWithChart, 0);
+  assert.match(html, /<div class="wykres-akcje">/);
+  assert.match(html, /<button type="button" class="wykres-wyczysc">Wyczyść rysunek<\/button>/);
+  assert.match(html, /<button type="button" class="wykres-powieksz">Powiększ<\/button>/);
+});

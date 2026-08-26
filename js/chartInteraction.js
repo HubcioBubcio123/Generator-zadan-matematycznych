@@ -21,10 +21,11 @@ function clientToSvgPoint(svg, clientX, clientY) {
 }
 
 export function initCharts(container) {
-  for (const svg of container.querySelectorAll('svg.wykres')) {
-    const overlay = svg.querySelector('.nakladka');
-    const drawing = svg.querySelector('.rysunek-ucznia');
-    if (!overlay || !drawing) continue;
+  for (const kontener of container.querySelectorAll('.wykres-kontener')) {
+    const svg = kontener.querySelector('svg.wykres');
+    const overlay = svg?.querySelector('.nakladka');
+    const drawing = svg?.querySelector('.rysunek-ucznia');
+    if (!svg || !overlay || !drawing) continue;
 
     let isDrawing = false;
     let pathData = drawing.getAttribute('d') || '';
@@ -58,6 +59,18 @@ export function initCharts(container) {
 
     overlay.addEventListener('pointercancel', () => {
       isDrawing = false;
+    });
+
+    const wyczyscButton = kontener.querySelector('.wykres-wyczysc');
+    wyczyscButton?.addEventListener('click', () => {
+      pathData = '';
+      drawing.setAttribute('d', '');
+    });
+
+    const powiekszButton = kontener.querySelector('.wykres-powieksz');
+    powiekszButton?.addEventListener('click', () => {
+      const powiekszony = kontener.classList.toggle('wykres-kontener--powiekszony');
+      powiekszButton.textContent = powiekszony ? 'Pomniejsz' : 'Powiększ';
     });
   }
 }

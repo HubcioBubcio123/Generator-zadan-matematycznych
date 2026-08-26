@@ -188,12 +188,28 @@ button:hover {
   background: var(--tlo);
 }
 
+.wykres-akcje {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.wykres-akcje button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
 .wykres {
   display: block;
   width: 100%;
   max-width: 20rem;
   height: auto;
   touch-action: none;
+}
+
+.wykres-kontener--powiekszony .wykres {
+  max-width: 40rem;
 }
 
 .wykres .siatka {

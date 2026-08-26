@@ -117,6 +117,7 @@ test('topic filtering restricts the sheet to that topic', () => {
 });
 
 test('exam mode produces valid tasks for both exams', () => {
+  const expectedLength = { osmoklasisty: 20, matura: 12 };
   for (const examKey of ['osmoklasisty', 'matura']) {
     const sheet = generateSheet({
       mode: 'egzamin',
@@ -125,7 +126,7 @@ test('exam mode produces valid tasks for both exams', () => {
       count: 12,
       seed: 3,
     });
-    assert.equal(sheet.length, 12);
+    assert.equal(sheet.length, expectedLength[examKey], examKey);
     sheet.forEach((task) => assertValidTask(task));
   }
 });
@@ -143,6 +144,68 @@ test('exam mode includes both closed and open tasks on a full sheet', () => {
     assert.ok(types.has('zamkniete'), `${examKey} had no closed tasks`);
     assert.ok(types.has('otwarte'), `${examKey} had no open tasks`);
   }
+});
+
+test('osmoklasisty exam mode always produces a fixed 20-task sheet regardless of options.count', () => {
+  for (const count of [1, 5, 12]) {
+    const sheet = generateSheet({
+      mode: 'egzamin',
+      examKey: 'osmoklasisty',
+      difficulty: 'sredni',
+      count,
+      seed: 1,
+    });
+    assert.equal(sheet.length, 20);
+  }
+});
+
+test('osmoklasisty exam mode puts exactly 14 closed tasks first, then 6 open tasks', () => {
+  const sheet = generateSheet({
+    mode: 'egzamin',
+    examKey: 'osmoklasisty',
+    difficulty: 'sredni',
+    count: 20,
+    seed: 2,
+  });
+  const types = sheet.map((t) => t.type);
+  assert.deepEqual(types.slice(0, 14), Array(14).fill('zamkniete'));
+  assert.deepEqual(types.slice(14), Array(6).fill('otwarte'));
+});
+
+test('osmoklasisty exam mode: the same seed reproduces the same sheet', () => {
+  const options = {
+    mode: 'egzamin',
+    examKey: 'osmoklasisty',
+    difficulty: 'trudny',
+    count: 20,
+    seed: 42,
+  };
+  assert.deepEqual(generateSheet(options), generateSheet(options));
+});
+
+test('osmoklasisty exam mode: no two tasks share identical tresc', () => {
+  for (let seed = 0; seed < 10; seed++) {
+    const sheet = generateSheet({
+      mode: 'egzamin',
+      examKey: 'osmoklasisty',
+      difficulty: 'sredni',
+      count: 20,
+      seed,
+    });
+    const texts = sheet.map((t) => t.tresc);
+    assert.equal(new Set(texts).size, texts.length, `seed ${seed}`);
+  }
+});
+
+test('matura exam mode is unaffected: still respects options.count and mixes closed/open', () => {
+  const sheet = generateSheet({
+    mode: 'egzamin',
+    examKey: 'matura',
+    difficulty: 'sredni',
+    count: 8,
+    seed: 3,
+  });
+  assert.equal(sheet.length, 8);
 });
 
 test('an out-of-range count is clamped rather than rejected', () => {

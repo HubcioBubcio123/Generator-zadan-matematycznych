@@ -8,7 +8,7 @@ export const EXAM_MODES = [
     key: 'osmoklasisty',
     label: 'Egzamin ósmoklasisty',
     gradeKeys: ['sp4', 'sp5', 'sp6', 'sp7', 'sp8'],
-    closedRatio: 0.6,
+    fixedStructure: { closedCount: 14, openCount: 6 },
   },
   {
     key: 'matura',

@@ -9,7 +9,9 @@ const MAX_COUNT = 12;
 const MAX_ATTEMPTS_PER_TASK = 40;
 
 function taskIdentity(task) {
-  return task.wykres ? `${task.tresc}|${JSON.stringify(task.wykres)}` : task.tresc;
+  if (task.wykres) return `${task.tresc}|${JSON.stringify(task.wykres)}`;
+  if (task.figura) return `${task.tresc}|${JSON.stringify(task.figura)}`;
+  return task.tresc;
 }
 
 export function clampCount(value) {
@@ -74,16 +76,37 @@ export function generateSheet(options) {
   const rng = createRng(seed);
 
   let closedRatio = null;
+  let fixedStructure = null;
   if (options.mode === 'egzamin') {
     const mode = EXAM_MODES.find((m) => m.key === options.examKey);
-    closedRatio = mode ? mode.closedRatio : null;
+    closedRatio = mode ? mode.closedRatio ?? null : null;
+    fixedStructure = mode ? mode.fixedStructure ?? null : null;
     ensureProbeTypes(pool);
   }
 
-  const order = buildOrder(pool, count, rng, closedRatio);
-  const sheet = [];
   const seenTexts = new Set();
+  const sheet = [];
 
+  if (fixedStructure) {
+    const closedPool = pool.filter((t) => t.probeType === 'zamkniete');
+    const openPool = pool.filter((t) => t.probeType !== 'zamkniete');
+    const closedOrder = buildOrder(closedPool, fixedStructure.closedCount, rng, null);
+    const openOrder = buildOrder(openPool, fixedStructure.openCount, rng, null);
+    appendGenerated(sheet, seenTexts, closedOrder, closedPool, options, rng);
+    appendGenerated(sheet, seenTexts, openOrder, openPool, options, rng);
+    return sheet;
+  }
+
+  const order = buildOrder(pool, count, rng, closedRatio);
+  appendGenerated(sheet, seenTexts, order, pool, options, rng);
+  return sheet;
+}
+
+// Generates one task per template in `order`, retrying against a different
+// template from `pool` on parameter-space exhaustion, and appends every
+// task it manages to produce onto `sheet` — shared by the single-sheet path
+// and both halves of the fixedStructure path above.
+function appendGenerated(sheet, seenTexts, order, pool, options, rng) {
   for (const template of order) {
     let task = null;
     for (let attempt = 0; attempt < MAX_ATTEMPTS_PER_TASK; attempt++) {
@@ -94,8 +117,6 @@ export function generateSheet(options) {
       }
     }
     if (task === null) {
-      // Parameter space exhausted for this template; fall back to any other
-      // template in the pool that can still produce something new.
       for (const alternative of rng.shuffle(pool)) {
         const candidate = alternative.generate(options.difficulty, rng);
         if (!seenTexts.has(taskIdentity(candidate))) {
@@ -108,8 +129,6 @@ export function generateSheet(options) {
     seenTexts.add(taskIdentity(task));
     sheet.push(task);
   }
-
-  return sheet;
 }
 
 // Shared by both reroll functions below: draws from `template` until it finds

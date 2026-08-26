@@ -72,7 +72,12 @@ test('declares both exam modes with Polish labels', () => {
   assert.deepEqual(EXAM_MODES.map((m) => m.key), ['osmoklasisty', 'matura']);
   for (const mode of EXAM_MODES) {
     assert.ok(mode.label.length > 0);
-    assert.ok(mode.closedRatio > 0 && mode.closedRatio < 1);
+    if (mode.key === 'osmoklasisty') {
+      assert.ok(mode.fixedStructure.closedCount > 0);
+      assert.ok(mode.fixedStructure.openCount > 0);
+    } else {
+      assert.ok(mode.closedRatio > 0 && mode.closedRatio < 1);
+    }
   }
 });
 

@@ -32,6 +32,29 @@ function checkWykres(wykres) {
   }
 }
 
+const ALLOWED_FIGURA_TYPES = ['trojkat', 'czworokat', 'mapa', 'prostopadloscian'];
+
+const FIGURA_NUMERIC_FIELDS = {
+  trojkat: ['bok'],
+  czworokat: [],
+  mapa: ['dx', 'dy'],
+  prostopadloscian: ['a', 'b', 'c'],
+};
+
+function checkFigura(figura) {
+  if (!figura || typeof figura !== 'object') {
+    throw new Error('Pole figura musi byc obiektem.');
+  }
+  if (!ALLOWED_FIGURA_TYPES.includes(figura.typ)) {
+    throw new Error(`Nieznany typ w figura.typ: ${figura.typ}`);
+  }
+  for (const key of FIGURA_NUMERIC_FIELDS[figura.typ]) {
+    if (typeof figura[key] !== 'number' || !Number.isFinite(figura[key])) {
+      throw new Error(`Pole figura.${key} musi byc skonczona liczba.`);
+    }
+  }
+}
+
 function checkText(value, field) {
   if (typeof value !== 'string' || value.length === 0) {
     throw new Error(`Pole ${field} musi byc niepustym tekstem.`);
@@ -63,6 +86,10 @@ export function assertValidTask(task) {
 
   if ('wykres' in task) {
     checkWykres(task.wykres);
+  }
+
+  if ('figura' in task) {
+    checkFigura(task.figura);
   }
 
   if (task.type === 'otwarte') {

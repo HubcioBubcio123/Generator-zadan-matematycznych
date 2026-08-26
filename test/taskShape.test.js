@@ -118,3 +118,39 @@ test('rejects a kwadratowa wykres missing c', () => {
     /wykres\.c/
   );
 });
+
+const validFigura = {
+  ...validOpen,
+  figura: { typ: 'trojkat', bok: 6 },
+};
+
+test('accepts a valid task with a figura field', () => {
+  assert.doesNotThrow(() => assertValidTask(validFigura));
+});
+
+test('accepts a czworokat figura with no numeric fields required', () => {
+  assert.doesNotThrow(() =>
+    assertValidTask({ ...validOpen, figura: { typ: 'czworokat' } })
+  );
+});
+
+test('rejects an unknown typ in figura', () => {
+  assert.throws(
+    () => assertValidTask({ ...validFigura, figura: { typ: 'kolo', bok: 6 } }),
+    /typ/
+  );
+});
+
+test('rejects a figura with a non-finite numeric field', () => {
+  assert.throws(
+    () => assertValidTask({ ...validFigura, figura: { typ: 'trojkat', bok: NaN } }),
+    /figura\.bok/
+  );
+});
+
+test('rejects a mapa figura missing dy', () => {
+  assert.throws(
+    () => assertValidTask({ ...validOpen, figura: { typ: 'mapa', dx: 3 } }),
+    /figura\.dy/
+  );
+});

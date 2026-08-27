@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports four templates with unique ids', () => {
-  assert.equal(templates.length, 4);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
+test('exports six templates with unique ids', () => {
+  assert.equal(templates.length, 6);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 6);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -86,6 +86,44 @@ test('dzialania calkowite: the stated value is the independently recomputed a^2 
       const [a, b, c, d] = task.tresc.match(/\d+/g).map(Number);
       const expected = a * a + b * c - d;
       assert.equal(parsePl(task.odpowiedz), expected, `${task.tresc} -> ${task.odpowiedz}`);
+    }
+  }
+});
+
+function gcdIndependent(a, b) {
+  a = Math.abs(a);
+  b = Math.abs(b);
+  while (b) [a, b] = [b, a % b];
+  return a;
+}
+
+function lcmIndependent(a, b) {
+  return (a * b) / gcdIndependent(a, b);
+}
+
+test('nwd nww egz: the stated NWD and NWW are independently correct', () => {
+  const template = templates.find((t) => t.id === 'liczby_naturalne_nwd_nww_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const numbers = task.tresc.match(/\d+/g).map(Number);
+      const [x, y, p, q] = numbers;
+      const m = task.odpowiedz.match(/^NWD = (\d+), NWW = (\d+)$/);
+      assert.ok(m, `unexpected answer format: "${task.odpowiedz}"`);
+      assert.equal(Number(m[1]), gcdIndependent(x, y), task.tresc);
+      assert.equal(Number(m[2]), lcmIndependent(p, q), task.tresc);
+    }
+  }
+});
+
+test('suma kolejnych egz: the stated sum equals n(n+1)/2 for the stated n', () => {
+  const template = templates.find((t) => t.id === 'liczby_naturalne_suma_kolejnych_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const [n] = task.tresc.match(/do (\d+)\./).slice(1).map(Number);
+      const expected = (n * (n + 1)) / 2;
+      assert.equal(parsePl(task.odpowiedz), expected, `n=${n} -> ${task.odpowiedz}`);
     }
   }
 });

@@ -144,8 +144,45 @@ function wzorPrzeksztalcenie(difficulty, rng) {
   };
 }
 
+const WARTOSC_RANGES = {
+  latwy: { max: 8 },
+  sredni: { max: 15 },
+  trudny: { max: 20 },
+};
+
+function wyrazenieAlgebraiczneWartosc(difficulty, rng) {
+  const { max } = WARTOSC_RANGES[difficulty];
+  const a = rng.int(2, max);
+  const b = rng.int(-max, max);
+  const x = rng.int(-10, 10);
+  const correct = formatNumber(a * x + b);
+
+  // Typowe błędy: zły znak przy b, dodanie x zamiast pomnożenia, złe
+  // pogrupowanie (a · (x+b)).
+  const wrong = [formatNumber(a * x - b), formatNumber(a + x + b), formatNumber(a * (x + b))];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  // Sign-guard b for proper Polish notation (+ 5 or - 5, never + -5)
+  const bSign = b >= 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+  const xSign = x >= 0 ? x : x;
+  const intermediate = a * x;
+  const intermediateSign = intermediate >= 0 ? `+ ${intermediate}` : `- ${Math.abs(intermediate)}`;
+
+  return {
+    id: 'rownania_wyrazenie_algebraiczne_wartosc_egz',
+    type: 'zamkniete',
+    tresc: `Oblicz wartość wyrażenia ${a}x ${bSign} dla x = ${xSign}.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie: `Podstawiamy x = ${xSign}: ${a} · ${xSign} ${bSign} = ${intermediate} ${intermediateSign} = ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_srednia_arytmetyczna_egz', generate: sredniaArytmetycznaEgz },
   { id: 'rownania_podzial_na_grupy_egz', generate: podzialNaGrupyEgz },
   { id: 'rownania_wzor_przeksztalcenie_egz', generate: wzorPrzeksztalcenie },
+  { id: 'rownania_wyrazenie_algebraiczne_wartosc_egz', generate: wyrazenieAlgebraiczneWartosc },
 ];

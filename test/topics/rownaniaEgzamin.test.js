@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports three templates with unique ids', () => {
-  assert.equal(templates.length, 3);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 3);
+test('exports four templates with unique ids', () => {
+  assert.equal(templates.length, 4);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -115,5 +115,22 @@ test('wzor przeksztalcenie: every catalog entry\'s correct rearrangement holds n
     assert.ok(Math.abs(c - C * (1 + p / 100)) > 1e-9);
     assert.ok(Math.abs(c - (C - p / 100)) > 1e-9);
     assert.ok(Math.abs(c - C / (1 - p / 100)) > 1e-9);
+  }
+});
+
+test('wyrazenie algebraiczne wartosc: the stated value equals a*x+b for the stated a, x, b', () => {
+  const template = templates.find((t) => t.id === 'rownania_wyrazenie_algebraiczne_wartosc_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/(-?\d+)x\s*([+-])\s*(\d+) dla x = (-?\d+)/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const a = Number(match[1]);
+      const sign = match[2];
+      const bAbs = Number(match[3]);
+      const b = sign === '+' ? bAbs : -bAbs;
+      const x = Number(match[4]);
+      assert.equal(parsePl(task.odpowiedz), a * x + b, task.tresc);
+    }
   }
 });

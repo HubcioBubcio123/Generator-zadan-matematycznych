@@ -90,7 +90,62 @@ function podzialNaGrupyEgz(difficulty, rng) {
   };
 }
 
+// Fixed, hand-verified catalog of (formula, correct rearrangement, 3 wrong
+// rearrangements) — deliberately not a general symbolic-algebra engine, per
+// this project's standing decision that generating/verifying arbitrary
+// symbolic equivalence is too fragile. Every entry's correctness is
+// independently re-derived in test/topics/rownaniaEgzamin.test.js.
+const WZOR_KATALOG = [
+  {
+    formula: 'S = n · (n + 1) : 2',
+    opis: 'suma n kolejnych liczb naturalnych',
+    poprawne: '2S = n² + n',
+    bledne: ['2S = n²', 'S = n² + n', '2S = n² - n'],
+  },
+  {
+    formula: 'P = a · h : 2',
+    opis: 'pole trójkąta o podstawie a i wysokości h',
+    poprawne: 'a = 2P : h',
+    bledne: ['a = P : (2h)', 'a = 2P · h', 'a = h : (2P)'],
+  },
+  {
+    formula: 'Obw = 2 · (a + b)',
+    opis: 'obwód prostokąta o bokach a i b',
+    poprawne: 'a = Obw : 2 - b',
+    bledne: ['a = Obw : 2 + b', 'a = Obw - b', 'a = Obw : (2b)'],
+  },
+  {
+    formula: 's = v · t',
+    opis: 'droga przy stałej prędkości v i czasie t',
+    poprawne: 'v = s : t',
+    bledne: ['v = s · t', 'v = t : s', 'v = s + t'],
+  },
+  {
+    formula: 'C = c · (1 + p : 100)',
+    opis: 'cena po podwyżce o p% z ceny początkowej c',
+    poprawne: 'c = C : (1 + p : 100)',
+    bledne: ['c = C · (1 + p : 100)', 'c = C - p : 100', 'c = C : (1 - p : 100)'],
+  },
+];
+
+function wzorPrzeksztalcenie(difficulty, rng) {
+  const entry = rng.pick(WZOR_KATALOG);
+  const { odpowiedzi, poprawna } = buildOptions(entry.poprawne, entry.bledne, rng);
+  const formulaDisplay = `${entry.formula}  (${entry.opis})`;
+
+  return {
+    id: 'rownania_wzor_przeksztalcenie_egz',
+    type: 'zamkniete',
+    tresc: `Dany jest wzór: ${formulaDisplay}. Wzór ten po poprawnym przekształceniu ma postać:`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: entry.poprawne,
+    rozwiazanie: `Przekształcając wzór ${entry.formula}, otrzymujemy ${entry.poprawne}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_srednia_arytmetyczna_egz', generate: sredniaArytmetycznaEgz },
   { id: 'rownania_podzial_na_grupy_egz', generate: podzialNaGrupyEgz },
+  { id: 'rownania_wzor_przeksztalcenie_egz', generate: wzorPrzeksztalcenie },
 ];

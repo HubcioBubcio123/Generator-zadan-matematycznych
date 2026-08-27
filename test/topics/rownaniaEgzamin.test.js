@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports two templates with unique ids', () => {
-  assert.equal(templates.length, 2);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 2);
+test('exports three templates with unique ids', () => {
+  assert.equal(templates.length, 3);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 3);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -54,5 +54,66 @@ test('podzial na grupy egz: the total splits exactly into the stated ratio/diffe
         `${task.tresc} -> ${task.odpowiedz} (expected ${expectedCat2})`
       );
     }
+  }
+});
+
+test('wzor przeksztalcenie: the stated answer is always one of the catalog\'s correct rearrangements', () => {
+  const template = templates.find((t) => t.id === 'rownania_wzor_przeksztalcenie_egz');
+  const knownCorrect = ['2S = n² + n', 'a = 2P : h', 'a = Obw : 2 - b', 'v = s : t', 'c = C : (1 + p : 100)'];
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 100; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      assert.ok(knownCorrect.includes(task.odpowiedz), `unexpected answer: "${task.odpowiedz}"`);
+    }
+  }
+});
+
+test('wzor przeksztalcenie: every catalog entry\'s correct rearrangement holds numerically and every wrong one does not', () => {
+  // Independent, hand-derived numeric verification of the fixed catalog —
+  // deliberately unaware of the template's own internal structure.
+
+  // Entry 1: S = n(n+1)/2  =>  correct: 2S = n^2 + n
+  for (const n of [3, 7, 12]) {
+    const S = (n * (n + 1)) / 2;
+    assert.equal(2 * S, n * n + n);
+    assert.notEqual(2 * S, n * n);
+    assert.notEqual(S, n * n + n);
+    assert.notEqual(2 * S, n * n - n);
+  }
+
+  // Entry 2: P = a*h/2  =>  correct: a = 2P/h
+  for (const [a, h] of [[4, 6], [10, 3], [7, 9]]) {
+    const P = (a * h) / 2;
+    assert.ok(Math.abs(a - (2 * P) / h) < 1e-9);
+    assert.ok(Math.abs(a - P / (2 * h)) > 1e-9);
+    assert.ok(Math.abs(a - 2 * P * h) > 1e-9);
+    assert.ok(Math.abs(a - h / (2 * P)) > 1e-9);
+  }
+
+  // Entry 3: Obw = 2(a+b)  =>  correct: a = Obw/2 - b
+  for (const [a, b] of [[3, 5], [8, 2], [6, 6]]) {
+    const Obw = 2 * (a + b);
+    assert.ok(Math.abs(a - (Obw / 2 - b)) < 1e-9);
+    assert.ok(Math.abs(a - (Obw / 2 + b)) > 1e-9 || b === 0);
+    assert.ok(Math.abs(a - (Obw - b)) > 1e-9 || b === Obw / 2);
+    assert.ok(Math.abs(a - Obw / (2 * b)) > 1e-9);
+  }
+
+  // Entry 4: s = v*t  =>  correct: v = s/t
+  for (const [v, t] of [[60, 2], [45, 3], [80, 4]]) {
+    const s = v * t;
+    assert.ok(Math.abs(v - s / t) < 1e-9);
+    assert.ok(Math.abs(v - s * t) > 1e-9);
+    assert.ok(Math.abs(v - t / s) > 1e-9);
+    assert.ok(Math.abs(v - (s + t)) > 1e-9);
+  }
+
+  // Entry 5: C = c*(1+p/100)  =>  correct: c = C/(1+p/100)
+  for (const [c, p] of [[100, 20], [50, 10], [200, 25]]) {
+    const C = c * (1 + p / 100);
+    assert.ok(Math.abs(c - C / (1 + p / 100)) < 1e-9);
+    assert.ok(Math.abs(c - C * (1 + p / 100)) > 1e-9);
+    assert.ok(Math.abs(c - (C - p / 100)) > 1e-9);
+    assert.ok(Math.abs(c - C / (1 - p / 100)) > 1e-9);
   }
 });

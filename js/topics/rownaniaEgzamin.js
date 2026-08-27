@@ -323,6 +323,38 @@ function procentZRownania(difficulty, rng) {
   };
 }
 
+const BOK_Z_OBWODU_RANGES = {
+  latwy: { max: 20 },
+  sredni: { max: 40 },
+  trudny: { max: 60 },
+};
+
+function dlugoscBokuZObwodu(difficulty, rng) {
+  const { max } = BOK_Z_OBWODU_RANGES[difficulty];
+  const a = rng.int(2, max);
+  const b = rng.int(2, max);
+  const obw = 2 * (a + b);
+  const correct = `${formatNumber(a)} cm`;
+
+  // Typowe błędy: dodanie b zamiast odjęcia, brak podzielenia obwodu przez
+  // 2, niepoprawna kolejność operacji (dzielenie przed odejmowaniem).
+  const wrong = [`${formatNumber(obw / 2 + b)} cm`, `${formatNumber(obw - b)} cm`, `${formatNumber((obw - b) / 2)} cm`];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'rownania_dlugosc_boku_z_obwodu_egz',
+    type: 'zamkniete',
+    tresc: `Obwód prostokąta jest równy ${obw} cm, a jeden z jego boków ma długość ${b} cm. Oblicz długość drugiego boku.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Obw = 2 · (a + b), więc a = Obw : 2 - b.\n` +
+      `a = ${obw} : 2 - ${b} = ${obw / 2} - ${b} = ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_srednia_arytmetyczna_egz', generate: sredniaArytmetycznaEgz },
   { id: 'rownania_podzial_na_grupy_egz', generate: podzialNaGrupyEgz },
@@ -332,4 +364,5 @@ export const templates = [
   { id: 'rownania_nierownosc_egz', generate: nierownosc },
   { id: 'rownania_wyrazenie_rownowazne_egz', generate: wyrazenieRownowazne },
   { id: 'rownania_procent_z_rownania_egz', generate: procentZRownania },
+  { id: 'rownania_dlugosc_boku_z_obwodu_egz', generate: dlugoscBokuZObwodu },
 ];

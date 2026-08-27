@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports eight templates with unique ids', () => {
-  assert.equal(templates.length, 8);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 8);
+test('exports nine templates with unique ids', () => {
+  assert.equal(templates.length, 9);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 9);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -224,6 +224,20 @@ test('procent z rownania: the stated x, increased by the stated p%, equals the s
       const y = parsePl(match[2]);
       const x = parsePl(task.odpowiedz);
       assert.ok(Math.abs(x * (1 + p / 100) - y) < 1e-6, task.tresc);
+    }
+  }
+});
+
+test('dlugosc boku z obwodu: the stated side equals Obw/2 - b for the stated perimeter and other side', () => {
+  const template = templates.find((t) => t.id === 'rownania_dlugosc_boku_z_obwodu_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/równy (\d+) cm[\s\S]*długość (\d+) cm/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const obw = Number(match[1]);
+      const b = Number(match[2]);
+      assert.equal(parsePl(task.odpowiedz), obw / 2 - b, task.tresc);
     }
   }
 });

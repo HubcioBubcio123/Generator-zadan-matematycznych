@@ -232,6 +232,43 @@ function zaokraglanie(difficulty, rng) {
   };
 }
 
+const KOLEJNOSC_RANGES = {
+  latwy: { max: 10 },
+  sredni: { max: 15 },
+  trudny: { max: 20 },
+};
+
+function kolejnoscDzialan(difficulty, rng) {
+  const { max } = KOLEJNOSC_RANGES[difficulty];
+  const a = rng.int(1, max);
+  const b = rng.int(1, max);
+  const c = rng.int(1, max);
+  const d = rng.int(1, max);
+  const correct = formatNumber(a + b * c - d);
+
+  // Typowe błędy: wykonanie działań od lewej do prawej z pominięciem
+  // kolejności działań, błędne pogrupowanie mnożenia, zły znak przy d.
+  const wrong = [
+    formatNumber((a + b) * c - d),
+    formatNumber(a + b * (c - d)),
+    formatNumber(a + b * c + d),
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_kolejnosc_dzialan_egz',
+    type: 'zamkniete',
+    tresc: `Oblicz wartość wyrażenia: ${a} + ${b} · ${c} - ${d}.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Najpierw mnożenie: ${b} · ${c} = ${b * c}.\n` +
+      `Następnie dodawanie i odejmowanie od lewej: ${a} + ${b * c} - ${d} = ${correct}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -401,4 +438,5 @@ export const templates = [
   { id: 'arytmetyka_porownanie_wyrazen_egz', generate: porownanieWyrazen },
   { id: 'arytmetyka_potega_iloczyn_egz', generate: potegaIloczyn },
   { id: 'arytmetyka_zaokraglanie_egz', generate: zaokraglanie },
+  { id: 'arytmetyka_kolejnosc_dzialan_egz', generate: kolejnoscDzialan },
 ];

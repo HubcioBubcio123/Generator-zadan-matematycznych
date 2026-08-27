@@ -276,3 +276,17 @@ print preview, and keyboard navigation.
 - More topics per grade beyond the v1 core set.
 - Student answer entry with auto-grading and a score.
 - A timed mock-exam mode with a full-length sheet.
+- **User-authored custom tasks.** Let a user add their own task through the
+  UI: they provide the problem's fixed structure/wording and formula, and it
+  becomes a new template the generator can draw from exactly like the
+  built-in ones — reusing the same `(difficulty, rng) -> task` contract, so
+  the generator still varies the numbers (and derives the answer/solution
+  from whatever formula the user supplied) on every generation, but the
+  underlying task type/shape the user defined stays fixed. Adding one changes
+  the file structure (a new template entry, likely in a new
+  user-contributed topic file or a dedicated storage layer, not just an edit
+  to an existing hand-written topic file). Needs its own design pass:
+  where user templates are stored/persisted, how a formula is captured and
+  validated safely (no arbitrary code execution) while still supporting
+  per-difficulty numeric ranges, and how such a task is scoped into a grade's
+  topic pool.

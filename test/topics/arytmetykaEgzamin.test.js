@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports fifteen templates with unique ids', () => {
-  assert.equal(templates.length, 15);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 15);
+test('exports sixteen templates with unique ids', () => {
+  assert.equal(templates.length, 16);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 16);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -257,6 +257,32 @@ test('reszta z dzielenia: the stated value equals n mod d', () => {
       const n = Number(match[1]);
       const d = Number(match[2]);
       assert.equal(parsePl(task.odpowiedz), n % d, task.tresc);
+    }
+  }
+});
+
+test('parzystosc kul: the stated parity and sum are independently correct', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_parzystosc_kul_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/było (\d+) kul[\s\S]*wylosowano (\d+) kul/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const N = Number(match[1]);
+      const r = Number(match[2]);
+      const oddCount = (N + 1) / 2;
+      const evenCount = (N - 1) / 2;
+      const kept = N - r;
+      const keepOdd = kept === oddCount;
+      assert.ok(keepOdd || kept === evenCount, `kept=${kept} matches neither parity count for N=${N}`);
+      let expectedSum = 0;
+      for (let k = 1; k <= N; k++) {
+        if (k % 2 === 1 === keepOdd) expectedSum += k;
+      }
+      const ansMatch = task.odpowiedz.match(/Liczby (\w+), suma = (-?\d+(?:,\d+)?)/);
+      assert.ok(ansMatch, `unexpected answer format: "${task.odpowiedz}"`);
+      assert.equal(ansMatch[1], keepOdd ? 'nieparzystymi' : 'parzystymi');
+      assert.equal(parsePl(ansMatch[2]), expectedSum, task.tresc);
     }
   }
 });

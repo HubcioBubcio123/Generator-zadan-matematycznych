@@ -430,6 +430,49 @@ function resztaZDzielenia(difficulty, rng) {
   };
 }
 
+const PARZYSTOSC_RANGES = {
+  latwy: { maxHalf: 5 },
+  sredni: { maxHalf: 7 },
+  trudny: { maxHalf: 10 },
+};
+
+function parzystoscKul(difficulty, rng) {
+  const { maxHalf } = PARZYSTOSC_RANGES[difficulty];
+  // N is always odd, so the odd-count and even-count of 1..N differ (by
+  // exactly 1) and never collide — the "kept" count below always resolves
+  // to a unique parity, avoiding the ambiguous case where both parities
+  // would leave the same number of balls behind.
+  const N = 2 * rng.int(3, maxHalf) + 1;
+  const oddCount = (N + 1) / 2;
+  const evenCount = (N - 1) / 2;
+  const keepOdd = rng.bool();
+  const kept = keepOdd ? oddCount : evenCount;
+  const r = N - kept;
+  let sum = 0;
+  for (let k = 1; k <= N; k++) {
+    if (k % 2 === 1 === keepOdd) sum += k;
+  }
+  const parityLabel = keepOdd ? 'nieparzystymi' : 'parzystymi';
+
+  return {
+    id: 'arytmetyka_parzystosc_kul_egz',
+    type: 'otwarte',
+    tresc:
+      `W pudełku było ${N} kul ponumerowanych kolejnymi liczbami naturalnymi od 1 do ${N}. ` +
+      `Z tego pudełka wylosowano ${r} kul. Suma liczb na dowolnych dwóch kulach, które ` +
+      `pozostały w pudełku, jest parzysta. Podaj, jakimi liczbami (parzystymi czy ` +
+      `nieparzystymi) są ponumerowane kule, które zostały w pudełku, oraz oblicz sumę ` +
+      `liczb na tych kulach.`,
+    odpowiedz: `Liczby ${parityLabel}, suma = ${formatNumber(sum)}`,
+    rozwiazanie:
+      `Suma dwóch liczb jest parzysta tylko wtedy, gdy obie są parzyste albo obie ` +
+      `nieparzyste — gdyby wśród pozostałych kul była mieszanka obu parzystości, dałoby ` +
+      `się znaleźć dwie kule o sumie nieparzystej. Zatem wszystkie pozostałe kule mają tę ` +
+      `samą parzystość: ${parityLabel}.\n` +
+      `Suma liczb ${parityLabel} od 1 do ${N}: ${formatNumber(sum)}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -605,4 +648,5 @@ export const templates = [
   { id: 'arytmetyka_dzielnik_pierwszy_egz', generate: dzielnikPierwszy },
   { id: 'arytmetyka_procent_prosty_egz', generate: procentProsty },
   { id: 'arytmetyka_reszta_z_dzielenia_egz', generate: resztaZDzielenia },
+  { id: 'arytmetyka_parzystosc_kul_egz', generate: parzystoscKul },
 ];

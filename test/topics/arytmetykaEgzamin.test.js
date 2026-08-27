@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports six templates with unique ids', () => {
-  assert.equal(templates.length, 6);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 6);
+test('exports seven templates with unique ids', () => {
+  assert.equal(templates.length, 7);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 7);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -124,6 +124,19 @@ test('suma kolejnych egz: the stated sum equals n(n+1)/2 for the stated n', () =
       const [n] = task.tresc.match(/do (\d+)\./).slice(1).map(Number);
       const expected = (n * (n + 1)) / 2;
       assert.equal(parsePl(task.odpowiedz), expected, `n=${n} -> ${task.odpowiedz}`);
+    }
+  }
+});
+
+test('porownanie wyrazen: the chosen candidate expression really equals p', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_porownanie_wyrazen_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const [a, b, c] = task.tresc.match(/-?\d+/g).map(Number);
+      const p = a - b - c;
+      const [x, y, z] = task.odpowiedz.match(/-?\d+/g).map(Number);
+      assert.equal(x - y - z, p, `${task.odpowiedz} should equal p=${p}`);
     }
   }
 });

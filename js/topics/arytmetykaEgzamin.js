@@ -111,6 +111,56 @@ function sumaKolejnychEgz(difficulty, rng) {
   };
 }
 
+const POROWNANIE_RANGES = {
+  latwy: { max: 30 },
+  sredni: { max: 60 },
+  trudny: { max: 100 },
+};
+
+function porownanieWyrazen(difficulty, rng) {
+  const { max } = POROWNANIE_RANGES[difficulty];
+  const a = rng.int(10, max);
+  const b = rng.int(1, Math.floor(max / 2));
+  const c = rng.int(1, Math.floor(max / 2));
+  const p = a - b - c;
+
+  // A second, freshly sampled a-b-c triple that lands on the same value p —
+  // this is the correct candidate, matching the real exam's "which of these
+  // is equal to p" framing.
+  const b2 = rng.int(1, Math.floor(max / 2));
+  const c2 = rng.int(1, Math.floor(max / 2));
+  const a2 = p + b2 + c2;
+  const correct = `${a2} - ${b2} - ${c2}`;
+
+  function freshWrong() {
+    let x, y, z, val;
+    do {
+      x = rng.int(10, max);
+      y = rng.int(1, Math.floor(max / 2));
+      z = rng.int(1, Math.floor(max / 2));
+      val = x - y - z;
+    } while (val === p);
+    return `${x} - ${y} - ${z}`;
+  }
+
+  // Typowe błędy: liczby dobrane tak, by wyrażenie dawało inną wartość niż p.
+  const wrong = [freshWrong(), freshWrong(), freshWrong()];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_porownanie_wyrazen_egz',
+    type: 'zamkniete',
+    tresc: `Liczba p jest równa ${a} - ${b} - ${c}. Która z podanych liczb jest równa p?`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `p = ${a} - ${b} - ${c} = ${p}.\n` +
+      `Sprawdzamy: ${correct} = ${p}, więc ta liczba jest równa p.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -277,4 +327,5 @@ export const templates = [
   { id: 'arytmetyka_dzialania_calkowite_egz', generate: dzialaniaCalkowite },
   { id: 'liczby_naturalne_nwd_nww_egz', generate: nwdNwwEgz },
   { id: 'liczby_naturalne_suma_kolejnych_egz', generate: sumaKolejnychEgz },
+  { id: 'arytmetyka_porownanie_wyrazen_egz', generate: porownanieWyrazen },
 ];

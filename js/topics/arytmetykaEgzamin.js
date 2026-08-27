@@ -197,6 +197,41 @@ function potegaIloczyn(difficulty, rng) {
   };
 }
 
+const ZAOKRAGLANIE_RANGES = {
+  latwy: { max: 999 },
+  sredni: { max: 9999 },
+  trudny: { max: 99999 },
+};
+
+function zaokraglanie(difficulty, rng) {
+  const { max } = ZAOKRAGLANIE_RANGES[difficulty];
+  const thousandths = rng.int(1, max);
+  const value = (thousandths + 0.5) / 1000;
+  const correct = formatNumber(Math.round(value * 100) / 100);
+
+  // Typowe błędy: obcięcie zamiast zaokrąglenia, zaokrąglenie do dziesiątych
+  // zamiast setnych, błąd o jeden na ostatniej cyfrze.
+  const wrong = [
+    formatNumber(Math.floor(value * 100) / 100),
+    formatNumber(Math.round(value * 10) / 10),
+    formatNumber(Math.round(value * 100) / 100 + 0.01),
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_zaokraglanie_egz',
+    type: 'zamkniete',
+    tresc: `Zaokrąglij liczbę ${formatNumber(value)} do części setnych (do dwóch miejsc po przecinku).`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Trzecia cyfra po przecinku decyduje o zaokrągleniu drugiej.\n` +
+      `${formatNumber(value)} zaokrąglone do setnych daje ${correct}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -365,4 +400,5 @@ export const templates = [
   { id: 'liczby_naturalne_suma_kolejnych_egz', generate: sumaKolejnychEgz },
   { id: 'arytmetyka_porownanie_wyrazen_egz', generate: porownanieWyrazen },
   { id: 'arytmetyka_potega_iloczyn_egz', generate: potegaIloczyn },
+  { id: 'arytmetyka_zaokraglanie_egz', generate: zaokraglanie },
 ];

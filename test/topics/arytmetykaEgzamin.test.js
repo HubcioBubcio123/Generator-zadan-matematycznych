@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports eight templates with unique ids', () => {
-  assert.equal(templates.length, 8);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 8);
+test('exports nine templates with unique ids', () => {
+  assert.equal(templates.length, 9);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 9);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -152,6 +152,20 @@ test('potega iloczyn: the stated value equals a^(m+n) for the stated a, m, n', (
       const m = Number(match[2]);
       const n = Number(match[3]);
       assert.equal(parsePl(task.odpowiedz), a ** (m + n), task.tresc);
+    }
+  }
+});
+
+test('zaokraglanie: the stated value is the independently rounded value to two decimal places', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_zaokraglanie_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/liczbę (-?\d+,\d+) do/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const value = Number(match[1].replace(',', '.'));
+      const expected = Math.round(value * 100) / 100;
+      assert.equal(parsePl(task.odpowiedz), expected, task.tresc);
     }
   }
 });

@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports eleven templates with unique ids', () => {
-  assert.equal(templates.length, 11);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 11);
+test('exports twelve templates with unique ids', () => {
+  assert.equal(templates.length, 12);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 12);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -192,6 +192,21 @@ test('ulamek dziesietny zamiana: the stated value equals m/n', () => {
       const m = Number(match[1]);
       const n = Number(match[2]);
       assert.ok(Math.abs(parsePl(task.odpowiedz) - m / n) < 1e-6, task.tresc);
+    }
+  }
+});
+
+test('najwieksza najmniejsza: the stated answer is the largest of the four listed numbers', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_najwieksza_najmniejsza_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const numbers = task.tresc
+        .match(/liczby: ([^.]+)\./)[1]
+        .split(';')
+        .map((s) => Number(s.trim().replace(',', '.')));
+      const expected = Math.max(...numbers);
+      assert.ok(Math.abs(parsePl(task.odpowiedz) - expected) < 1e-6, task.tresc);
     }
   }
 });

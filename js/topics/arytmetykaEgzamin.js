@@ -296,6 +296,37 @@ function ulamekDziesietnyZamiana(difficulty, rng) {
   };
 }
 
+const NAJWIEKSZA_RANGES = {
+  latwy: { max: 20, decimals: false },
+  sredni: { max: 50, decimals: true },
+  trudny: { max: 100, decimals: true },
+};
+
+function najwiekszaNajmniejsza(difficulty, rng) {
+  const { max, decimals } = NAJWIEKSZA_RANGES[difficulty];
+  const values = new Set();
+  while (values.size < 4) {
+    const whole = rng.int(-max, max);
+    const value = decimals ? whole + rng.pick([0, 0.5]) : whole;
+    values.add(value);
+  }
+  const numbers = [...values];
+  const correct = formatNumber(Math.max(...numbers));
+  const wrong = numbers.filter((v) => v !== Math.max(...numbers)).map((v) => formatNumber(v));
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_najwieksza_najmniejsza_egz',
+    type: 'zamkniete',
+    tresc: `Dane są liczby: ${numbers.map((v) => formatNumber(v)).join('; ')}. Wybierz największą z podanych liczb.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie: `Porównując podane liczby na osi liczbowej, największa z nich to ${correct}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -467,4 +498,5 @@ export const templates = [
   { id: 'arytmetyka_zaokraglanie_egz', generate: zaokraglanie },
   { id: 'arytmetyka_kolejnosc_dzialan_egz', generate: kolejnoscDzialan },
   { id: 'arytmetyka_ulamek_dziesietny_zamiana_egz', generate: ulamekDziesietnyZamiana },
+  { id: 'arytmetyka_najwieksza_najmniejsza_egz', generate: najwiekszaNajmniejsza },
 ];

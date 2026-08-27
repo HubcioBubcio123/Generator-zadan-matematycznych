@@ -161,6 +161,42 @@ function porownanieWyrazen(difficulty, rng) {
   };
 }
 
+const POTEGA_ILOCZYN_RANGES = {
+  latwy: { aMax: 4, expMax: 3 },
+  sredni: { aMax: 6, expMax: 4 },
+  trudny: { aMax: 8, expMax: 4 },
+};
+
+function potegaIloczyn(difficulty, rng) {
+  const { aMax, expMax } = POTEGA_ILOCZYN_RANGES[difficulty];
+  const a = rng.int(2, aMax);
+  const m = rng.int(2, expMax);
+  const n = rng.int(2, expMax);
+  const correct = formatNumber(a ** (m + n));
+
+  // Typowe błędy: pomnożenie wykładników zamiast dodania, dodanie samych
+  // potęg zamiast zastosowania wzoru, podwojenie podstawy.
+  const wrong = [
+    formatNumber(a ** (m * n)),
+    formatNumber(a ** m + a ** n),
+    formatNumber((2 * a) ** (m + n)),
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_potega_iloczyn_egz',
+    type: 'zamkniete',
+    tresc: `Oblicz wartość wyrażenia: ${a}^${m} · ${a}^${n}.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Przy mnożeniu potęg o tej samej podstawie dodajemy wykładniki: ${a}^${m} · ${a}^${n} = ${a}^${m + n}.\n` +
+      `${a}^${m + n} = ${correct}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -328,4 +364,5 @@ export const templates = [
   { id: 'liczby_naturalne_nwd_nww_egz', generate: nwdNwwEgz },
   { id: 'liczby_naturalne_suma_kolejnych_egz', generate: sumaKolejnychEgz },
   { id: 'arytmetyka_porownanie_wyrazen_egz', generate: porownanieWyrazen },
+  { id: 'arytmetyka_potega_iloczyn_egz', generate: potegaIloczyn },
 ];

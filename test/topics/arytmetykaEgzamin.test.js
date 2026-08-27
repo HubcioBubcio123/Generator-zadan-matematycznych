@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports seven templates with unique ids', () => {
-  assert.equal(templates.length, 7);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 7);
+test('exports eight templates with unique ids', () => {
+  assert.equal(templates.length, 8);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 8);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -137,6 +137,21 @@ test('porownanie wyrazen: the chosen candidate expression really equals p', () =
       const p = a - b - c;
       const [x, y, z] = task.odpowiedz.match(/-?\d+/g).map(Number);
       assert.equal(x - y - z, p, `${task.odpowiedz} should equal p=${p}`);
+    }
+  }
+});
+
+test('potega iloczyn: the stated value equals a^(m+n) for the stated a, m, n', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_potega_iloczyn_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/(\d+)\^(\d+) · \1\^(\d+)/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const a = Number(match[1]);
+      const m = Number(match[2]);
+      const n = Number(match[3]);
+      assert.equal(parsePl(task.odpowiedz), a ** (m + n), task.tresc);
     }
   }
 });

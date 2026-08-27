@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports ten templates with unique ids', () => {
-  assert.equal(templates.length, 10);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 10);
+test('exports eleven templates with unique ids', () => {
+  assert.equal(templates.length, 11);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 11);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -178,6 +178,20 @@ test('kolejnosc dzialan: the stated value equals a + b*c - d evaluated with corr
       const [a, b, c, d] = task.tresc.match(/-?\d+/g).map(Number);
       const expected = a + b * c - d;
       assert.equal(parsePl(task.odpowiedz), expected, task.tresc);
+    }
+  }
+});
+
+test('ulamek dziesietny zamiana: the stated value equals m/n', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_ulamek_dziesietny_zamiana_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/ułamek (\d+)\/(\d+)/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const m = Number(match[1]);
+      const n = Number(match[2]);
+      assert.ok(Math.abs(parsePl(task.odpowiedz) - m / n) < 1e-6, task.tresc);
     }
   }
 });

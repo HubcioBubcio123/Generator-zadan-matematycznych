@@ -269,6 +269,33 @@ function kolejnoscDzialan(difficulty, rng) {
   };
 }
 
+// Every denominator below divides some power of 10, so m/n always
+// terminates within formatNumber's 4 decimal places.
+const ZAMIANA_DENOMINATORY = [2, 4, 5, 8, 10, 20, 25, 50];
+
+function ulamekDziesietnyZamiana(difficulty, rng) {
+  const n = rng.pick(ZAMIANA_DENOMINATORY);
+  const m = rng.int(1, 2 * n);
+  const value = m / n;
+  const correct = formatNumber(value);
+
+  // Typowe błędy: odwrócenie ułamka, przesunięcie przecinka o jedno miejsce
+  // w złą stronę.
+  const wrong = [formatNumber(n / m), formatNumber(value * 10), formatNumber(value / 10)];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_ulamek_dziesietny_zamiana_egz',
+    type: 'zamkniete',
+    tresc: `Zamień ułamek ${m}/${n} na liczbę dziesiętną.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie: `Dzielimy licznik przez mianownik: ${m} : ${n} = ${correct}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -439,4 +466,5 @@ export const templates = [
   { id: 'arytmetyka_potega_iloczyn_egz', generate: potegaIloczyn },
   { id: 'arytmetyka_zaokraglanie_egz', generate: zaokraglanie },
   { id: 'arytmetyka_kolejnosc_dzialan_egz', generate: kolejnoscDzialan },
+  { id: 'arytmetyka_ulamek_dziesietny_zamiana_egz', generate: ulamekDziesietnyZamiana },
 ];

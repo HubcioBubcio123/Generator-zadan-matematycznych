@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports thirteen templates with unique ids', () => {
-  assert.equal(templates.length, 13);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 13);
+test('exports fourteen templates with unique ids', () => {
+  assert.equal(templates.length, 14);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 14);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -229,6 +229,20 @@ test('dzielnik pierwszy: the stated answer is prime and divides N', () => {
       const answer = Number(task.odpowiedz);
       assert.ok(isPrimeIndependent(answer), `${answer} is not prime`);
       assert.equal(N % answer, 0, `${answer} does not divide ${N}`);
+    }
+  }
+});
+
+test('procent prosty: the stated value equals X% of Y', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_procent_prosty_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/(\d+)% liczby (\d+)/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const p = Number(match[1]);
+      const y = Number(match[2]);
+      assert.ok(Math.abs(parsePl(task.odpowiedz) - (p * y) / 100) < 1e-6, task.tresc);
     }
   }
 });

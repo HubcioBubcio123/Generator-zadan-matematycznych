@@ -365,6 +365,35 @@ function dzielnikPierwszy(difficulty, rng) {
   };
 }
 
+const PROCENT_PROSTY_RANGES = {
+  latwy: { yMax: 200, pSet: [10, 20, 50] },
+  sredni: { yMax: 500, pSet: [10, 20, 25, 40, 50] },
+  trudny: { yMax: 1000, pSet: [5, 10, 15, 20, 25, 40, 50, 75] },
+};
+
+function procentProsty(difficulty, rng) {
+  const { yMax, pSet } = PROCENT_PROSTY_RANGES[difficulty];
+  const p = rng.pick(pSet);
+  const y = rng.int(2, Math.floor(yMax / 20)) * 20;
+  const correct = formatNumber((p * y) / 100);
+
+  // Typowe błędy: pomnożenie zamiast podzielenia przez 100, podzielenie
+  // zamiast pomnożenia, przesunięcie przecinka o jedno miejsce.
+  const wrong = [formatNumber(p * y), formatNumber(y / p), formatNumber((p * y) / 1000)];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_procent_prosty_egz',
+    type: 'zamkniete',
+    tresc: `Oblicz ${p}% liczby ${y}.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie: `${p}% liczby ${y} to ${p}/100 · ${y} = ${correct}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -538,4 +567,5 @@ export const templates = [
   { id: 'arytmetyka_ulamek_dziesietny_zamiana_egz', generate: ulamekDziesietnyZamiana },
   { id: 'arytmetyka_najwieksza_najmniejsza_egz', generate: najwiekszaNajmniejsza },
   { id: 'arytmetyka_dzielnik_pierwszy_egz', generate: dzielnikPierwszy },
+  { id: 'arytmetyka_procent_prosty_egz', generate: procentProsty },
 ];

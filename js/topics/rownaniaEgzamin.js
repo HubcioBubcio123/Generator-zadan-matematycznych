@@ -226,8 +226,8 @@ function nierownosc(difficulty, rng) {
   const correct = formatNumber(x0 + 1);
 
   // Typowe błędy: podanie rozwiązania nierówności nieostrej (x0, na
-  // granicy), podanie wartości spoza rozwiązania, zmiana znaku.
-  const wrong = [formatNumber(x0), formatNumber(x0 - 1), formatNumber(-(x0 + 1))];
+  // granicy), podanie wartości spoza rozwiązania, wartość poniżej granicy.
+  const wrong = [formatNumber(x0), formatNumber(x0 - 1), formatNumber(x0 - 2)];
 
   const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
 
@@ -262,11 +262,11 @@ function wyrazenieRownowazne(difficulty, rng) {
   const correct = `${coefSum}x ${cSign} ${cAbs}`;
 
   // Typowe błędy: pomnożenie zamiast dodania współczynników, zły znak
-  // stałej, brak uproszczenia (wyrażenie pozostawione w wyjściowej postaci).
+  // stałej, zły znak współczynnika.
   const wrong = [
     `${a * b}x ${cSign} ${cAbs}`,
     `${coefSum}x ${cSign === '+' ? '-' : '+'} ${cAbs}`,
-    `${a}x + ${b}x ${cSign} ${cAbs}`,
+    `-${coefSum}x ${cSign} ${cAbs}`,
   ];
 
   const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);

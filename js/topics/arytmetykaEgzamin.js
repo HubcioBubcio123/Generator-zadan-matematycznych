@@ -508,6 +508,31 @@ function dzialaniaLancuchowe(difficulty, rng) {
   };
 }
 
+const SZACOWANIE_RANGES = {
+  latwy: { capMax: 30, nMax: 200 },
+  sredni: { capMax: 50, nMax: 500 },
+  trudny: { capMax: 80, nMax: 1000 },
+};
+
+function szacowanie(difficulty, rng) {
+  const { capMax, nMax } = SZACOWANIE_RANGES[difficulty];
+  const cap = rng.int(10, capMax);
+  let n = rng.int(cap + 1, nMax);
+  if (n % cap === 0) n += 1; // keep the ceiling genuinely meaningful, not a clean division
+  const vehicles = Math.ceil(n / cap);
+
+  return {
+    id: 'arytmetyka_szacowanie_egz',
+    type: 'otwarte',
+    tresc: `Jeden autobus może przewieźć co najwyżej ${cap} osób. Oblicz, ile co najmniej autobusów potrzeba, aby przewieźć ${n} osób.`,
+    odpowiedz: formatNumber(vehicles),
+    rozwiazanie:
+      `${n} : ${cap} = ${formatNumber(Number((n / cap).toFixed(4)))}.\n` +
+      `Liczba autobusów musi być liczbą całkowitą wystarczającą dla wszystkich osób, ` +
+      `więc zaokrąglamy w górę: ${vehicles}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -685,4 +710,5 @@ export const templates = [
   { id: 'arytmetyka_reszta_z_dzielenia_egz', generate: resztaZDzielenia },
   { id: 'arytmetyka_parzystosc_kul_egz', generate: parzystoscKul },
   { id: 'arytmetyka_dzialania_lancuchowe_egz', generate: dzialaniaLancuchowe },
+  { id: 'arytmetyka_szacowanie_egz', generate: szacowanie },
 ];

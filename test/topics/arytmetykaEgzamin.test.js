@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports seventeen templates with unique ids', () => {
-  assert.equal(templates.length, 17);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 17);
+test('exports eighteen templates with unique ids', () => {
+  assert.equal(templates.length, 18);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 18);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -302,6 +302,20 @@ test('dzialania lancuchowe: the stated remainder is independently correct', () =
       const step2 = pozostalo1 / d2;
       const expected = pozostalo1 - step2;
       assert.equal(parsePl(task.odpowiedz), expected, task.tresc);
+    }
+  }
+});
+
+test('szacowanie: the stated number of vehicles is the independently computed ceiling', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_szacowanie_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/co najwyżej (\d+) osób[\s\S]*przewieźć (\d+) osób/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const cap = Number(match[1]);
+      const n = Number(match[2]);
+      assert.equal(parsePl(task.odpowiedz), Math.ceil(n / cap), task.tresc);
     }
   }
 });

@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports twelve templates with unique ids', () => {
-  assert.equal(templates.length, 12);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 12);
+test('exports thirteen templates with unique ids', () => {
+  assert.equal(templates.length, 13);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 13);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -207,6 +207,28 @@ test('najwieksza najmniejsza: the stated answer is the largest of the four liste
         .map((s) => Number(s.trim().replace(',', '.')));
       const expected = Math.max(...numbers);
       assert.ok(Math.abs(parsePl(task.odpowiedz) - expected) < 1e-6, task.tresc);
+    }
+  }
+});
+
+const PRIMES_TEST = [2, 3, 5, 7, 11, 13, 17, 19, 23];
+function isPrimeIndependent(x) {
+  if (x < 2) return false;
+  for (let d = 2; d * d <= x; d++) if (x % d === 0) return false;
+  return true;
+}
+
+test('dzielnik pierwszy: the stated answer is prime and divides N', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_dzielnik_pierwszy_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/N = (\d+) · (\d+) = (\d+)/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const N = Number(match[3]);
+      const answer = Number(task.odpowiedz);
+      assert.ok(isPrimeIndependent(answer), `${answer} is not prime`);
+      assert.equal(N % answer, 0, `${answer} does not divide ${N}`);
     }
   }
 });

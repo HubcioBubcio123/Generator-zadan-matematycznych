@@ -327,6 +327,44 @@ function najwiekszaNajmniejsza(difficulty, rng) {
   };
 }
 
+const DZIELNIK_RANGES = {
+  latwy: { primes: [2, 3, 5, 7] },
+  sredni: { primes: [2, 3, 5, 7, 11, 13] },
+  trudny: { primes: [2, 3, 5, 7, 11, 13, 17, 19] },
+};
+
+function dzielnikPierwszy(difficulty, rng) {
+  const { primes } = DZIELNIK_RANGES[difficulty];
+  let p, q, r;
+  do {
+    p = rng.pick(primes);
+    q = rng.pick(primes);
+  } while (p === q);
+  do {
+    r = rng.pick(primes);
+  } while (r === p || r === q);
+  const N = p * q;
+  const correct = String(p);
+
+  // Typowe błędy: podanie liczby N (złożonej), podanie jedynki (nie jest
+  // liczbą pierwszą), podanie liczby pierwszej niebędącej dzielnikiem N.
+  const wrong = [String(N), '1', String(r)];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_dzielnik_pierwszy_egz',
+    type: 'zamkniete',
+    tresc: `Liczba N jest iloczynem dwóch liczb pierwszych: N = ${p} · ${q} = ${N}. Który z podanych dzielników liczby N jest liczbą pierwszą?`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Dzielnikami liczby N są: 1, ${p}, ${q}, ${N}.\n` +
+      `Spośród podanych opcji liczbą pierwszą i jednocześnie dzielnikiem N jest ${correct}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -499,4 +537,5 @@ export const templates = [
   { id: 'arytmetyka_kolejnosc_dzialan_egz', generate: kolejnoscDzialan },
   { id: 'arytmetyka_ulamek_dziesietny_zamiana_egz', generate: ulamekDziesietnyZamiana },
   { id: 'arytmetyka_najwieksza_najmniejsza_egz', generate: najwiekszaNajmniejsza },
+  { id: 'arytmetyka_dzielnik_pierwszy_egz', generate: dzielnikPierwszy },
 ];

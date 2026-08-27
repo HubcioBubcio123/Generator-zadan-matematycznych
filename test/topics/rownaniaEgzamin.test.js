@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports six templates with unique ids', () => {
-  assert.equal(templates.length, 6);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 6);
+test('exports seven templates with unique ids', () => {
+  assert.equal(templates.length, 7);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 7);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -189,6 +189,26 @@ test('nierownosc: the stated x strictly satisfies a*x+b > c', () => {
       const c = Number(match[4]);
       const x = parsePl(task.odpowiedz);
       assert.ok(a * x + b > c, `${task.tresc} -> x=${x} does not satisfy the inequality`);
+    }
+  }
+});
+
+test('wyrazenie rownowazne: the stated coefficient equals a+b and the stated constant equals c', () => {
+  const template = templates.find((t) => t.id === 'rownania_wyrazenie_rownowazne_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/wyrażeniu (\d+)x \+ (\d+)x ([+-]) (\d+)\?/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const a = Number(match[1]);
+      const b = Number(match[2]);
+      const c = match[3] === '+' ? Number(match[4]) : -Number(match[4]);
+      const ansMatch = task.odpowiedz.match(/(\d+)x ([+-]) (\d+)/);
+      assert.ok(ansMatch, `unexpected answer format: "${task.odpowiedz}"`);
+      const statedCoef = Number(ansMatch[1]);
+      const statedConst = ansMatch[2] === '+' ? Number(ansMatch[3]) : -Number(ansMatch[3]);
+      assert.equal(statedCoef, a + b, task.tresc);
+      assert.equal(statedConst, c, task.tresc);
     }
   }
 });

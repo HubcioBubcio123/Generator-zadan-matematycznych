@@ -245,6 +245,45 @@ function nierownosc(difficulty, rng) {
   };
 }
 
+const ROWNOWAZNE_RANGES = {
+  latwy: { max: 8 },
+  sredni: { max: 15 },
+  trudny: { max: 20 },
+};
+
+function wyrazenieRownowazne(difficulty, rng) {
+  const { max } = ROWNOWAZNE_RANGES[difficulty];
+  const a = rng.int(1, max);
+  const b = rng.int(1, max);
+  const c = rng.int(-max, max);
+  const coefSum = a + b;
+  const cSign = c >= 0 ? '+' : '-';
+  const cAbs = Math.abs(c);
+  const correct = `${coefSum}x ${cSign} ${cAbs}`;
+
+  // Typowe błędy: pomnożenie zamiast dodania współczynników, zły znak
+  // stałej, brak uproszczenia (wyrażenie pozostawione w wyjściowej postaci).
+  const wrong = [
+    `${a * b}x ${cSign} ${cAbs}`,
+    `${coefSum}x ${cSign === '+' ? '-' : '+'} ${cAbs}`,
+    `${a}x + ${b}x ${cSign} ${cAbs}`,
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'rownania_wyrazenie_rownowazne_egz',
+    type: 'zamkniete',
+    tresc: `Które z podanych wyrażeń jest równe wyrażeniu ${a}x + ${b}x ${cSign} ${cAbs}?`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Grupujemy wyrazy podobne: ${a}x + ${b}x = ${coefSum}x.\n` +
+      `Wyrażenie równoważne: ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_srednia_arytmetyczna_egz', generate: sredniaArytmetycznaEgz },
   { id: 'rownania_podzial_na_grupy_egz', generate: podzialNaGrupyEgz },
@@ -252,4 +291,5 @@ export const templates = [
   { id: 'rownania_wyrazenie_algebraiczne_wartosc_egz', generate: wyrazenieAlgebraiczneWartosc },
   { id: 'rownania_uklad_dwoch_niewiadomych_egz', generate: ukladDwochNiewiadomych },
   { id: 'rownania_nierownosc_egz', generate: nierownosc },
+  { id: 'rownania_wyrazenie_rownowazne_egz', generate: wyrazenieRownowazne },
 ];

@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports nine templates with unique ids', () => {
-  assert.equal(templates.length, 9);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 9);
+test('exports ten templates with unique ids', () => {
+  assert.equal(templates.length, 10);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 10);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -238,6 +238,20 @@ test('dlugosc boku z obwodu: the stated side equals Obw/2 - b for the stated per
       const obw = Number(match[1]);
       const b = Number(match[2]);
       assert.equal(parsePl(task.odpowiedz), obw / 2 - b, task.tresc);
+    }
+  }
+});
+
+test('wiek zadanie: the stated age equals (suma - d) / 2 for the stated sum and difference', () => {
+  const template = templates.find((t) => t.id === 'rownania_wiek_zadanie_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/o (\d+) lat starsza[\s\S]*wynosi (\d+) lat/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const d = Number(match[1]);
+      const suma = Number(match[2]);
+      assert.equal(parsePl(task.odpowiedz), (suma - d) / 2, task.tresc);
     }
   }
 });

@@ -355,6 +355,41 @@ function dlugoscBokuZObwodu(difficulty, rng) {
   };
 }
 
+const WIEK_RANGES = {
+  latwy: { corkaMax: 12 },
+  sredni: { corkaMax: 16 },
+  trudny: { corkaMax: 20 },
+};
+
+function wiekZadanie(difficulty, rng) {
+  const { corkaMax } = WIEK_RANGES[difficulty];
+  const corka = rng.int(5, corkaMax);
+  const d = rng.int(15, 35);
+  const matka = corka + d;
+  const suma = corka + matka;
+  const correct = formatNumber(corka);
+
+  // Typowe błędy: podanie wieku matki, pominięcie różnicy wieku, podanie
+  // połowy sumy bez uwzględnienia różnicy.
+  const wrong = [formatNumber(matka), formatNumber(suma - d), formatNumber(suma / 2)];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'rownania_wiek_zadanie_egz',
+    type: 'zamkniete',
+    tresc: `Matka jest o ${d} lat starsza od córki. Suma ich wieku wynosi ${suma} lat. Oblicz, ile lat ma córka.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Niech wiek córki wynosi x. Wtedy matka ma x + ${d} lat.\n` +
+      `x + (x + ${d}) = ${suma}.\n` +
+      `2x = ${suma - d}.\n` +
+      `x = ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_srednia_arytmetyczna_egz', generate: sredniaArytmetycznaEgz },
   { id: 'rownania_podzial_na_grupy_egz', generate: podzialNaGrupyEgz },
@@ -365,4 +400,5 @@ export const templates = [
   { id: 'rownania_wyrazenie_rownowazne_egz', generate: wyrazenieRownowazne },
   { id: 'rownania_procent_z_rownania_egz', generate: procentZRownania },
   { id: 'rownania_dlugosc_boku_z_obwodu_egz', generate: dlugoscBokuZObwodu },
+  { id: 'rownania_wiek_zadanie_egz', generate: wiekZadanie },
 ];

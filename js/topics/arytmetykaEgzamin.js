@@ -394,6 +394,42 @@ function procentProsty(difficulty, rng) {
   };
 }
 
+const RESZTA_RANGES = {
+  latwy: { dMax: 8, nMax: 60 },
+  sredni: { dMax: 12, nMax: 150 },
+  trudny: { dMax: 15, nMax: 300 },
+};
+
+function resztaZDzielenia(difficulty, rng) {
+  const { dMax, nMax } = RESZTA_RANGES[difficulty];
+  const d = rng.int(2, dMax);
+  const n = rng.int(d + 1, nMax);
+  const reszta = n % d;
+  const iloraz = Math.floor(n / d);
+  const correct = formatNumber(reszta);
+
+  // Typowe błędy: podanie ilorazu zamiast reszty, odjęcie reszty od
+  // dzielnika, użycie złego dzielnika.
+  const wrong = [
+    formatNumber(iloraz),
+    formatNumber(d - reszta === d ? 0 : d - reszta),
+    formatNumber(n % (d + 1)),
+  ];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'arytmetyka_reszta_z_dzielenia_egz',
+    type: 'zamkniete',
+    tresc: `Oblicz resztę z dzielenia liczby ${n} przez ${d}.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `${n} : ${d} = ${iloraz} reszty ${reszta} (bo ${iloraz} · ${d} = ${iloraz * d}, a ${n} - ${iloraz * d} = ${reszta}).`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -568,4 +604,5 @@ export const templates = [
   { id: 'arytmetyka_najwieksza_najmniejsza_egz', generate: najwiekszaNajmniejsza },
   { id: 'arytmetyka_dzielnik_pierwszy_egz', generate: dzielnikPierwszy },
   { id: 'arytmetyka_procent_prosty_egz', generate: procentProsty },
+  { id: 'arytmetyka_reszta_z_dzielenia_egz', generate: resztaZDzielenia },
 ];

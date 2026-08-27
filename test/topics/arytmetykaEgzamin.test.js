@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports fourteen templates with unique ids', () => {
-  assert.equal(templates.length, 14);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 14);
+test('exports fifteen templates with unique ids', () => {
+  assert.equal(templates.length, 15);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 15);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -243,6 +243,20 @@ test('procent prosty: the stated value equals X% of Y', () => {
       const p = Number(match[1]);
       const y = Number(match[2]);
       assert.ok(Math.abs(parsePl(task.odpowiedz) - (p * y) / 100) < 1e-6, task.tresc);
+    }
+  }
+});
+
+test('reszta z dzielenia: the stated value equals n mod d', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_reszta_z_dzielenia_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/liczby (\d+) przez (\d+)/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const n = Number(match[1]);
+      const d = Number(match[2]);
+      assert.equal(parsePl(task.odpowiedz), n % d, task.tresc);
     }
   }
 });

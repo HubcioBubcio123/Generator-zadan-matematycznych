@@ -533,6 +533,36 @@ function szacowanie(difficulty, rng) {
   };
 }
 
+const CZAS_RANGES = {
+  latwy: { dMax: 180 },
+  sredni: { dMax: 400 },
+  trudny: { dMax: 800 },
+};
+
+function czasKalendarz(difficulty, rng) {
+  const { dMax } = CZAS_RANGES[difficulty];
+  const H = rng.int(0, 23);
+  const M = rng.int(0, 59);
+  const D = rng.int(15, dMax);
+  const startTotal = H * 60 + M;
+  const endTotal = (startTotal + D) % 1440;
+  const HH = String(H).padStart(2, '0');
+  const MM = String(M).padStart(2, '0');
+  const endHH = String(Math.floor(endTotal / 60)).padStart(2, '0');
+  const endMM = String(endTotal % 60).padStart(2, '0');
+
+  return {
+    id: 'arytmetyka_czas_kalendarz_egz',
+    type: 'otwarte',
+    tresc: `Pociąg odjechał ze stacji o godzinie ${HH}:${MM} i jechał przez ${D} minut. Oblicz, o której godzinie dotarł do celu (podaj godzinę i minuty).`,
+    odpowiedz: `${endHH}:${endMM}`,
+    rozwiazanie:
+      `Czas odjazdu w minutach od północy: ${H} · 60 + ${M} = ${startTotal}.\n` +
+      `Czas przyjazdu w minutach: ${startTotal} + ${D} = ${startTotal + D}, ` +
+      `co po uwzględnieniu doby daje ${endHH}:${endMM}.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -711,4 +741,5 @@ export const templates = [
   { id: 'arytmetyka_parzystosc_kul_egz', generate: parzystoscKul },
   { id: 'arytmetyka_dzialania_lancuchowe_egz', generate: dzialaniaLancuchowe },
   { id: 'arytmetyka_szacowanie_egz', generate: szacowanie },
+  { id: 'arytmetyka_czas_kalendarz_egz', generate: czasKalendarz },
 ];

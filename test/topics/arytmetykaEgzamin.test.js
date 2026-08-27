@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports eighteen templates with unique ids', () => {
-  assert.equal(templates.length, 18);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 18);
+test('exports nineteen templates with unique ids', () => {
+  assert.equal(templates.length, 19);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 19);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -316,6 +316,25 @@ test('szacowanie: the stated number of vehicles is the independently computed ce
       const cap = Number(match[1]);
       const n = Number(match[2]);
       assert.equal(parsePl(task.odpowiedz), Math.ceil(n / cap), task.tresc);
+    }
+  }
+});
+
+test('czas kalendarz: the stated arrival time is independently correct modulo 24h', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_czas_kalendarz_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/godzinie (\d{2}):(\d{2})[\s\S]*przez (\d+) minut/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const H = Number(match[1]);
+      const M = Number(match[2]);
+      const D = Number(match[3]);
+      const startTotal = H * 60 + M;
+      const endTotal = (startTotal + D) % 1440;
+      const expectedH = String(Math.floor(endTotal / 60)).padStart(2, '0');
+      const expectedM = String(endTotal % 60).padStart(2, '0');
+      assert.equal(task.odpowiedz, `${expectedH}:${expectedM}`, task.tresc);
     }
   }
 });

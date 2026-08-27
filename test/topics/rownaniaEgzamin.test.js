@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports ten templates with unique ids', () => {
-  assert.equal(templates.length, 10);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 10);
+test('exports eleven templates with unique ids', () => {
+  assert.equal(templates.length, 11);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 11);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -252,6 +252,20 @@ test('wiek zadanie: the stated age equals (suma - d) / 2 for the stated sum and 
       const d = Number(match[1]);
       const suma = Number(match[2]);
       assert.equal(parsePl(task.odpowiedz), (suma - d) / 2, task.tresc);
+    }
+  }
+});
+
+test('predkosc prosta: the stated time equals s / v for the stated distance and speed', () => {
+  const template = templates.find((t) => t.id === 'rownania_predkosc_prosta_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/przejechał (\d+) km ze stałą prędkością (\d+) km\/h/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const s = Number(match[1]);
+      const v = Number(match[2]);
+      assert.equal(parsePl(task.odpowiedz), s / v, task.tresc);
     }
   }
 });

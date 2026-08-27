@@ -390,6 +390,36 @@ function wiekZadanie(difficulty, rng) {
   };
 }
 
+const PREDKOSC_PROSTA_RANGES = {
+  latwy: { vSet: [40, 50, 60], tMax: 4 },
+  sredni: { vSet: [40, 50, 60, 80, 90], tMax: 6 },
+  trudny: { vSet: [40, 50, 60, 80, 90, 100, 120], tMax: 8 },
+};
+
+function predkoscProsta(difficulty, rng) {
+  const { vSet, tMax } = PREDKOSC_PROSTA_RANGES[difficulty];
+  const v = rng.pick(vSet);
+  const t = rng.int(1, tMax);
+  const s = v * t;
+  const correct = `${formatNumber(t)} h`;
+
+  // Typowe błędy: podzielenie drogi przez 2*prędkość (błąd przy anulowaniu),
+  // pomnożenie drogi przez prędkość, odjęcie prędkości od drogi.
+  const wrong = [`${formatNumber(s / (2 * v))} h`, `${formatNumber(s * v)} h`, `${formatNumber(s - v)} h`];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'rownania_predkosc_prosta_egz',
+    type: 'zamkniete',
+    tresc: `Samochód przejechał ${s} km ze stałą prędkością ${v} km/h. Oblicz czas jazdy tego samochodu.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie: `t = s : v = ${s} : ${v} = ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_srednia_arytmetyczna_egz', generate: sredniaArytmetycznaEgz },
   { id: 'rownania_podzial_na_grupy_egz', generate: podzialNaGrupyEgz },
@@ -401,4 +431,5 @@ export const templates = [
   { id: 'rownania_procent_z_rownania_egz', generate: procentZRownania },
   { id: 'rownania_dlugosc_boku_z_obwodu_egz', generate: dlugoscBokuZObwodu },
   { id: 'rownania_wiek_zadanie_egz', generate: wiekZadanie },
+  { id: 'rownania_predkosc_prosta_egz', generate: predkoscProsta },
 ];

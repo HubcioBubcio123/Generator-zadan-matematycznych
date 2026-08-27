@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports five templates with unique ids', () => {
-  assert.equal(templates.length, 5);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 5);
+test('exports six templates with unique ids', () => {
+  assert.equal(templates.length, 6);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 6);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -173,6 +173,22 @@ test('uklad dwoch niewiadomych: the stated x equals (S+D)/2 for the stated sum S
       const S = Number(match[1]);
       const D = Number(match[2]);
       assert.equal(parsePl(task.odpowiedz), (S + D) / 2, task.tresc);
+    }
+  }
+});
+
+test('nierownosc: the stated x strictly satisfies a*x+b > c', () => {
+  const template = templates.find((t) => t.id === 'rownania_nierownosc_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/(\d+)x ([+-]) (\d+) > (-?\d+)/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const a = Number(match[1]);
+      const b = match[2] === '+' ? Number(match[3]) : -Number(match[3]);
+      const c = Number(match[4]);
+      const x = parsePl(task.odpowiedz);
+      assert.ok(a * x + b > c, `${task.tresc} -> x=${x} does not satisfy the inequality`);
     }
   }
 });

@@ -211,10 +211,45 @@ function ukladDwochNiewiadomych(difficulty, rng) {
   };
 }
 
+const NIEROWNOSC_RANGES = {
+  latwy: { aMax: 5, x0Max: 10 },
+  sredni: { aMax: 8, x0Max: 15 },
+  trudny: { aMax: 10, x0Max: 20 },
+};
+
+function nierownosc(difficulty, rng) {
+  const { aMax, x0Max } = NIEROWNOSC_RANGES[difficulty];
+  const a = rng.int(2, aMax);
+  const b = rng.int(-10, 10);
+  const x0 = rng.int(-x0Max, x0Max);
+  const c = a * x0 + b;
+  const correct = formatNumber(x0 + 1);
+
+  // Typowe błędy: podanie rozwiązania nierówności nieostrej (x0, na
+  // granicy), podanie wartości spoza rozwiązania, zmiana znaku.
+  const wrong = [formatNumber(x0), formatNumber(x0 - 1), formatNumber(-(x0 + 1))];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'rownania_nierownosc_egz',
+    type: 'zamkniete',
+    tresc: `Dla której z podanych wartości x nierówność ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} > ${c} jest prawdziwa?`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Rozwiązaniem nierówności ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} > ${c} jest x > ${x0} ` +
+      `(bo ${a} · ${x0} ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c}).\n` +
+      `Spośród podanych wartości warunek x > ${x0} spełnia ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_srednia_arytmetyczna_egz', generate: sredniaArytmetycznaEgz },
   { id: 'rownania_podzial_na_grupy_egz', generate: podzialNaGrupyEgz },
   { id: 'rownania_wzor_przeksztalcenie_egz', generate: wzorPrzeksztalcenie },
   { id: 'rownania_wyrazenie_algebraiczne_wartosc_egz', generate: wyrazenieAlgebraiczneWartosc },
   { id: 'rownania_uklad_dwoch_niewiadomych_egz', generate: ukladDwochNiewiadomych },
+  { id: 'rownania_nierownosc_egz', generate: nierownosc },
 ];

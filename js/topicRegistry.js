@@ -17,6 +17,7 @@ import { templates as procentyEgzamin } from './topics/procentyEgzamin.js';
 import { templates as geometriaEgzamin } from './topics/geometriaEgzamin.js';
 import { templates as arytmetykaEgzamin } from './topics/arytmetykaEgzamin.js';
 import { templates as brylyEgzamin } from './topics/brylyEgzamin.js';
+import { templates as rownaniaEgzamin } from './topics/rownaniaEgzamin.js';
 
 export const TOPICS = [
   { key: 'liczby_naturalne', label: 'Działania na liczbach naturalnych', templates: liczbyNaturalne },
@@ -41,6 +42,8 @@ export const TOPICS = [
   { key: 'arytmetyka_osmoklasisty', label: 'Arytmetyka (egzamin ósmoklasisty)', templates: arytmetykaEgzamin },
   // Exam-exclusive: deliberately not listed under any grade's topicKeys.
   { key: 'bryly_osmoklasisty', label: 'Bryły (egzamin ósmoklasisty)', templates: brylyEgzamin },
+  // Exam-exclusive: deliberately not listed under any grade's topicKeys.
+  { key: 'rownania_osmoklasisty', label: 'Równania (egzamin ósmoklasisty)', templates: rownaniaEgzamin },
 ];
 
 export const GRADES = [

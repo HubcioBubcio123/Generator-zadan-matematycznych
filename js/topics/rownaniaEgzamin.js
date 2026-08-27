@@ -284,6 +284,45 @@ function wyrazenieRownowazne(difficulty, rng) {
   };
 }
 
+// Each percent maps to a denominator that keeps x*(100+p)/100 an exact
+// integer for any integer multiple of that denominator.
+const PROC_ROWNANIA_DENOM = { 10: 10, 20: 5, 25: 4, 50: 2 };
+
+const PROC_ROWNANIA_RANGES = {
+  latwy: { xMax: 50, pset: [10, 20] },
+  sredni: { xMax: 100, pset: [10, 20, 25] },
+  trudny: { xMax: 200, pset: [10, 20, 25, 50] },
+};
+
+function procentZRownania(difficulty, rng) {
+  const { xMax, pset } = PROC_ROWNANIA_RANGES[difficulty];
+  const p = rng.pick(pset);
+  const denom = PROC_ROWNANIA_DENOM[p];
+  const x = denom * rng.int(1, Math.floor(xMax / denom));
+  const y = (x * (100 + p)) / 100;
+  const correct = formatNumber(x);
+  const mnoznik = formatNumber((100 + p) / 100);
+
+  // Typowe błędy: podanie y zamiast x, pomnożenie zamiast podzielenia przez
+  // mnożnik, odjęcie p zamiast podzielenia.
+  const wrong = [formatNumber(y), formatNumber(y * (100 + p) / 100), formatNumber(y - p)];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'rownania_procent_z_rownania_egz',
+    type: 'zamkniete',
+    tresc: `Pewna liczba x zwiększona o ${p}% jest równa ${formatNumber(y)}. Oblicz liczbę x.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `x · (1 + ${p}/100) = ${formatNumber(y)}.\n` +
+      `x · ${mnoznik} = ${formatNumber(y)}.\n` +
+      `x = ${formatNumber(y)} : ${mnoznik} = ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_srednia_arytmetyczna_egz', generate: sredniaArytmetycznaEgz },
   { id: 'rownania_podzial_na_grupy_egz', generate: podzialNaGrupyEgz },
@@ -292,4 +331,5 @@ export const templates = [
   { id: 'rownania_uklad_dwoch_niewiadomych_egz', generate: ukladDwochNiewiadomych },
   { id: 'rownania_nierownosc_egz', generate: nierownosc },
   { id: 'rownania_wyrazenie_rownowazne_egz', generate: wyrazenieRownowazne },
+  { id: 'rownania_procent_z_rownania_egz', generate: procentZRownania },
 ];

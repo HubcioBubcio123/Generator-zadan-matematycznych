@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports seven templates with unique ids', () => {
-  assert.equal(templates.length, 7);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 7);
+test('exports eight templates with unique ids', () => {
+  assert.equal(templates.length, 8);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 8);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -209,6 +209,21 @@ test('wyrazenie rownowazne: the stated coefficient equals a+b and the stated con
       const statedConst = ansMatch[2] === '+' ? Number(ansMatch[3]) : -Number(ansMatch[3]);
       assert.equal(statedCoef, a + b, task.tresc);
       assert.equal(statedConst, c, task.tresc);
+    }
+  }
+});
+
+test('procent z rownania: the stated x, increased by the stated p%, equals the stated y', () => {
+  const template = templates.find((t) => t.id === 'rownania_procent_z_rownania_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/zwiększona o (\d+)% jest równa ([\d,]+)/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const p = Number(match[1]);
+      const y = parsePl(match[2]);
+      const x = parsePl(task.odpowiedz);
+      assert.ok(Math.abs(x * (1 + p / 100) - y) < 1e-6, task.tresc);
     }
   }
 });

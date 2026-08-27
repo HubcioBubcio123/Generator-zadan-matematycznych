@@ -135,6 +135,34 @@ test('wyrazenie algebraiczne wartosc: the stated value equals a*x+b for the stat
   }
 });
 
+test('wyrazenie algebraiczne wartosc: the arithmetic in rozwiazanie is correct', () => {
+  const template = templates.find((t) => t.id === 'rownania_wyrazenie_algebraiczne_wartosc_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      // Parse the solution to extract the intermediate value (a*x) and verify arithmetic
+      const matchRozwiazan = task.rozwiazanie.match(/(\d+) · (-?\d+)\s*([+-])\s*(\d+) = (-?\d+) ([+-]) (\d+) = (-?\d+)/);
+      assert.ok(matchRozwiazan, `unexpected rozwiazanie format: "${task.rozwiazanie}"`);
+      const a = Number(matchRozwiazan[1]);
+      const x = Number(matchRozwiazan[2]);
+      const bSign = matchRozwiazan[3];
+      const bAbs = Number(matchRozwiazan[4]);
+      const intermediate = Number(matchRozwiazan[5]);
+      const secondSign = matchRozwiazan[6];
+      const secondAbs = Number(matchRozwiazan[7]);
+      const final = Number(matchRozwiazan[8]);
+
+      // Verify intermediate = a * x
+      assert.equal(intermediate, a * x, `intermediate: ${a} · ${x} should equal ${a * x}, got ${intermediate}`);
+
+      // Verify the final addition/subtraction is arithmetically correct
+      const b = bSign === '+' ? bAbs : -bAbs;
+      const arithmeticCheck = secondSign === '+' ? intermediate + secondAbs : intermediate - secondAbs;
+      assert.equal(arithmeticCheck, final, `${intermediate} ${secondSign} ${secondAbs} should equal ${final}, got ${arithmeticCheck}`);
+    }
+  }
+});
+
 test('uklad dwoch niewiadomych: the stated x equals (S+D)/2 for the stated sum S and difference D', () => {
   const template = templates.find((t) => t.id === 'rownania_uklad_dwoch_niewiadomych_egz');
   for (const difficulty of LEVELS) {

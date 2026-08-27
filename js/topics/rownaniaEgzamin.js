@@ -165,18 +165,16 @@ function wyrazenieAlgebraiczneWartosc(difficulty, rng) {
 
   // Sign-guard b for proper Polish notation (+ 5 or - 5, never + -5)
   const bSign = b >= 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
-  const xSign = x >= 0 ? x : x;
   const intermediate = a * x;
-  const intermediateSign = intermediate >= 0 ? `+ ${intermediate}` : `- ${Math.abs(intermediate)}`;
 
   return {
     id: 'rownania_wyrazenie_algebraiczne_wartosc_egz',
     type: 'zamkniete',
-    tresc: `Oblicz wartość wyrażenia ${a}x ${bSign} dla x = ${xSign}.`,
+    tresc: `Oblicz wartość wyrażenia ${a}x ${bSign} dla x = ${x}.`,
     odpowiedzi,
     poprawna,
     odpowiedz: correct,
-    rozwiazanie: `Podstawiamy x = ${xSign}: ${a} · ${xSign} ${bSign} = ${intermediate} ${intermediateSign} = ${correct}.`,
+    rozwiazanie: `Podstawiamy x = ${x}: ${a} · ${x} ${bSign} = ${intermediate} ${bSign} = ${correct}.`,
   };
 }
 

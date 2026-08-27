@@ -180,9 +180,43 @@ function wyrazenieAlgebraiczneWartosc(difficulty, rng) {
   };
 }
 
+const UKLAD_RANGES = {
+  latwy: { xMax: 15 },
+  sredni: { xMax: 25 },
+  trudny: { xMax: 40 },
+};
+
+function ukladDwochNiewiadomych(difficulty, rng) {
+  const { xMax } = UKLAD_RANGES[difficulty];
+  const x = rng.int(2, xMax);
+  const y = rng.int(1, xMax);
+  const S = x + y;
+  const D = x - y;
+  const correct = formatNumber(x);
+
+  // Typowe błędy: podanie y zamiast x, pominięcie dzielenia przez 2,
+  // dodanie S i D bez podzielenia.
+  const wrong = [formatNumber(y), formatNumber(S - D), formatNumber(S + D)];
+
+  const { odpowiedzi, poprawna } = buildOptions(correct, wrong, rng);
+
+  return {
+    id: 'rownania_uklad_dwoch_niewiadomych_egz',
+    type: 'zamkniete',
+    tresc: `Dany jest układ równań: x + y = ${S}, x - y = ${D}. Oblicz wartość x.`,
+    odpowiedzi,
+    poprawna,
+    odpowiedz: correct,
+    rozwiazanie:
+      `Dodając stronami oba równania: 2x = ${S} + ${D} = ${S + D}.\n` +
+      `x = ${S + D} : 2 = ${correct}.`,
+  };
+}
+
 export const templates = [
   { id: 'rownania_srednia_arytmetyczna_egz', generate: sredniaArytmetycznaEgz },
   { id: 'rownania_podzial_na_grupy_egz', generate: podzialNaGrupyEgz },
   { id: 'rownania_wzor_przeksztalcenie_egz', generate: wzorPrzeksztalcenie },
   { id: 'rownania_wyrazenie_algebraiczne_wartosc_egz', generate: wyrazenieAlgebraiczneWartosc },
+  { id: 'rownania_uklad_dwoch_niewiadomych_egz', generate: ukladDwochNiewiadomych },
 ];

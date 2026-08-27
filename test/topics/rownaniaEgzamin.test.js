@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports four templates with unique ids', () => {
-  assert.equal(templates.length, 4);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 4);
+test('exports five templates with unique ids', () => {
+  assert.equal(templates.length, 5);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 5);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -131,6 +131,20 @@ test('wyrazenie algebraiczne wartosc: the stated value equals a*x+b for the stat
       const b = sign === '+' ? bAbs : -bAbs;
       const x = Number(match[4]);
       assert.equal(parsePl(task.odpowiedz), a * x + b, task.tresc);
+    }
+  }
+});
+
+test('uklad dwoch niewiadomych: the stated x equals (S+D)/2 for the stated sum S and difference D', () => {
+  const template = templates.find((t) => t.id === 'rownania_uklad_dwoch_niewiadomych_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/x \+ y = (-?\d+)[\s\S]*x - y = (-?\d+)/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const S = Number(match[1]);
+      const D = Number(match[2]);
+      assert.equal(parsePl(task.odpowiedz), (S + D) / 2, task.tresc);
     }
   }
 });

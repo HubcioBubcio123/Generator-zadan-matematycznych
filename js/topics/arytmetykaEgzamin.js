@@ -473,6 +473,41 @@ function parzystoscKul(difficulty, rng) {
   };
 }
 
+const LANCUCH_RANGES = {
+  latwy: { d1: [2, 3], d2: [2, 4], kMax: 6 },
+  sredni: { d1: [3, 4], d2: [3, 5], kMax: 10 },
+  trudny: { d1: [4, 5], d2: [4, 6], kMax: 15 },
+};
+
+function dzialaniaLancuchowe(difficulty, rng) {
+  const { d1: d1Choices, d2: d2Choices, kMax } = LANCUCH_RANGES[difficulty];
+  const d1 = rng.pick(d1Choices);
+  const d2 = rng.pick(d2Choices);
+  const k = rng.int(2, kMax);
+  // X = d1 * d2 * k guarantees both the first spend (X/d1) and the second
+  // spend (a d2-th of the remainder) come out as exact integers, since the
+  // remainder after the first spend is always d2*k*(d1-1).
+  const X = d1 * d2 * k;
+  const step1 = X / d1;
+  const pozostalo1 = X - step1;
+  const step2 = pozostalo1 / d2;
+  const pozostalo2 = pozostalo1 - step2;
+
+  return {
+    id: 'arytmetyka_dzialania_lancuchowe_egz',
+    type: 'otwarte',
+    tresc:
+      `Ola miała ${formatNumber(X)} zł. Wydała 1/${d1} tej kwoty na książkę, a następnie ` +
+      `1/${d2} pozostałej kwoty na zeszyt. Oblicz, ile złotych zostało Oli.`,
+    odpowiedz: formatNumber(pozostalo2),
+    rozwiazanie:
+      `Kwota wydana na książkę: ${formatNumber(X)} : ${d1} = ${formatNumber(step1)} zł.\n` +
+      `Pozostało: ${formatNumber(X)} - ${formatNumber(step1)} = ${formatNumber(pozostalo1)} zł.\n` +
+      `Kwota wydana na zeszyt: ${formatNumber(pozostalo1)} : ${d2} = ${formatNumber(step2)} zł.\n` +
+      `Zostało: ${formatNumber(pozostalo1)} - ${formatNumber(step2)} = ${formatNumber(pozostalo2)} zł.`,
+  };
+}
+
 const PROPORCJA_RANGES = {
   latwy: { aMax: 6, xMax: 12 },
   sredni: { aMax: 10, xMax: 20 },
@@ -649,4 +684,5 @@ export const templates = [
   { id: 'arytmetyka_procent_prosty_egz', generate: procentProsty },
   { id: 'arytmetyka_reszta_z_dzielenia_egz', generate: resztaZDzielenia },
   { id: 'arytmetyka_parzystosc_kul_egz', generate: parzystoscKul },
+  { id: 'arytmetyka_dzialania_lancuchowe_egz', generate: dzialaniaLancuchowe },
 ];

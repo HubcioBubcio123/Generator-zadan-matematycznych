@@ -10,9 +10,9 @@ function parsePl(text) {
   return Number(text.replace(/[^\d,-]/g, '').replace(',', '.'));
 }
 
-test('exports sixteen templates with unique ids', () => {
-  assert.equal(templates.length, 16);
-  assert.equal(new Set(templates.map((t) => t.id)).size, 16);
+test('exports seventeen templates with unique ids', () => {
+  assert.equal(templates.length, 17);
+  assert.equal(new Set(templates.map((t) => t.id)).size, 17);
 });
 
 test('every template produces contract-valid tasks at every difficulty', () => {
@@ -283,6 +283,25 @@ test('parzystosc kul: the stated parity and sum are independently correct', () =
       assert.ok(ansMatch, `unexpected answer format: "${task.odpowiedz}"`);
       assert.equal(ansMatch[1], keepOdd ? 'nieparzystymi' : 'parzystymi');
       assert.equal(parsePl(ansMatch[2]), expectedSum, task.tresc);
+    }
+  }
+});
+
+test('dzialania lancuchowe: the stated remainder is independently correct', () => {
+  const template = templates.find((t) => t.id === 'arytmetyka_dzialania_lancuchowe_egz');
+  for (const difficulty of LEVELS) {
+    for (let seed = 0; seed < 200; seed++) {
+      const task = template.generate(difficulty, createRng(seed));
+      const match = task.tresc.match(/miała (\d+) zł[\s\S]*1\/(\d+)[\s\S]*na książkę[\s\S]*1\/(\d+)[\s\S]*pozostałej/);
+      assert.ok(match, `unexpected format: "${task.tresc}"`);
+      const X = Number(match[1]);
+      const d1 = Number(match[2]);
+      const d2 = Number(match[3]);
+      const step1 = X / d1;
+      const pozostalo1 = X - step1;
+      const step2 = pozostalo1 / d2;
+      const expected = pozostalo1 - step2;
+      assert.equal(parsePl(task.odpowiedz), expected, task.tresc);
     }
   }
 });
